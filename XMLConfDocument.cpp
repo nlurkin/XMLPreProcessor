@@ -66,7 +66,10 @@ xmlNodePtr XMLConfDocument::findPathNode(std::string path) {
 	xmlNodePtr cur;
 	// First element of the path must be the root
 	if(!xmlStrcmp(getRoot()->name, (const xmlChar *)list.front().data())) cur = getRoot();
-	else return NULL;
+	else{
+		std::cout << "Root node " << list.front() << " is not found in XML" << std::endl;
+		return NULL;
+	}
 	if(cur){
 		list.erase(list.begin());
 		return findPathNode(list, cur);

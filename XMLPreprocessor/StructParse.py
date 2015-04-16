@@ -9,7 +9,7 @@ fileContent = """#include "{FileBase}Proxy.h"
 #include "XMLConfWriter.h"
 #include "XMLConfParser.h"
 
-void apply_{struct}({struct} *ptr, char* fileName){{
+void apply_{struct}({struct} *ptr, const char* fileName){{
     XMLConfParser parser;
     parser.readFile(fileName);
     
@@ -18,7 +18,7 @@ void apply_{struct}({struct} *ptr, char* fileName){{
 /*void test_{struct}({struct} *ptr){{
 {testers}}}
 */
-void create_{struct}({struct} *ptr, char* fileName){{
+void create_{struct}({struct} *ptr, const char* fileName){{
     XMLConfWriter writer;
     writer.createDocument("{struct}");
     
@@ -35,9 +35,9 @@ fileHeader = """#include "{FileBase}.h"
 #ifdef __cplusplus
 extern "C" {{
 #endif
-void apply_{struct}({struct} *ptr, char* fileName);
+void apply_{struct}({struct} *ptr, const char* fileName);
 //void test_{struct}({struct} *ptr);
-void create_{struct}({struct} *ptr, char* fileName);
+void create_{struct}({struct} *ptr, const char* fileName);
 
 #ifdef __cplusplus
 }}
@@ -70,7 +70,7 @@ class struct():
 
 def parseStruct(structLines):
     s = struct()
-    m = re.findall("(?:typedef )?struct (.*) {(.*)}\s*(.*?)\s*;", "".join(structLines), re.MULTILINE | re.DOTALL)
+    m = re.findall("(?:typedef )?struct (.*)\s*{(.*)}\s*(.*?)\s*;", "".join(structLines), re.MULTILINE | re.DOTALL)
     if m:
         s.name = m[0][0]
         s.typedef = m[0][2]
@@ -95,7 +95,8 @@ def parse(fileName):
                     structArr.append(structLines)
                 structLines = [line]
             else:
-                structLines.append(line)
+                if structLines:
+                    structLines.append(line)
     
     if structLines:
         structArr.append(structLines)

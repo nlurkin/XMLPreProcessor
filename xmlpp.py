@@ -35,7 +35,9 @@ if __name__ == '__main__':
 	
 	preProcessedFile = dirName + "/" + baseName + ".pre"
 	
-	call(["gcc", "-x", "c++", "-E", filePath, "-o", preProcessedFile])
+	cmd = ["gcc", "-x", "c++", "-E", filePath, "-o", preProcessedFile, "-I", os.path.dirname(__file__)]
+	print " ".join(cmd)
+	call(cmd)
 	d = StructParse.parse(preProcessedFile)
 
 	if len(d)==1:
