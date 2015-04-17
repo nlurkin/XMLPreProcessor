@@ -112,9 +112,62 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
 
 bool XMLConfParser::pathExists(std::string path) {
 	xmlNodePtr n = findPathNode(path);
+	addCheckElement(path);
 	if(n){
+		addListDiffElement(path);
 		fReadSuccess++;
 		return true;
 	}
 	return false;
+}
+
+void XMLConfParser::startCheckAdditional() {
+	xmlNodePtr root = getRoot();
+
+	if(root){
+		walkTreeCompare("", root);
+	}
+}
+
+std::string XMLConfParser::getFirstDiff() {
+	fListDiffIterator = fListDiff.begin();
+	if(fListDiffIterator!= fListDiff.end()) return *fListDiffIterator;
+	return "";
+}
+
+std::string XMLConfParser::getNextDiff() {
+	fListDiffIterator++;
+	if(fListDiffIterator!= fListDiff.end()) return *fListDiffIterator;
+	return "";
+}
+
+void XMLConfParser::walkTreeCompare(std::string prefix, xmlNodePtr node) {
+	xmlNodePtr n = node->children;
+
+	std::string path;
+	if(prefix=="") path = (const char*)node->name;
+	else path = prefix + "." + std::string((const char*)node->name);
+
+	if(getNSiblings(n)==1){ // This node has only one child. Can only be a text
+		fListAdditional.insert(path);
+		return;
+	}
+	while(n){
+		walkTreeCompare(path, n);
+		n = n->next;
+	}
+}
+
+void XMLConfParser::addCheckElement(std::string path) {
+	fListAdditional.erase(path);
+}
+
+void XMLConfParser::printAdditional() {
+	for(auto it : fListAdditional){
+		std::cout << it << std::endl;
+	}
+}
+
+void XMLConfParser::addListDiffElement(std::string path) {
+	fListDiff.push_back(path);
 }

@@ -8,6 +8,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
+#include <unordered_set>
 #include "XMLConfDocument.h"
 
 #ifndef XMLCONFPARSER_H_
@@ -43,7 +44,18 @@ public:
 
 	bool pathExists(std::string path);
 
+	void startCheckAdditional();
+	void addCheckElement(std::string path);
+	void addListDiffElement(std::string path);
+	std::string getFirstDiff();
+	std::string getNextDiff();
+	void printAdditional();
 private:
+	void walkTreeCompare(std::string prefix, xmlNodePtr node);
+
 	int fReadSuccess;
+	std::unordered_set<std::string> fListAdditional;
+	std::vector<std::string> fListDiff;
+	std::vector<std::string>::iterator fListDiffIterator;
 };
 #endif /* XMLCONFPARSER_H_ */

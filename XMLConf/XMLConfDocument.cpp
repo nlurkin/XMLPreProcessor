@@ -147,3 +147,12 @@ std::string XMLErrorStack::stringStack() {
 	}
 	return ss.str();
 }
+
+int XMLConfDocument::getNSiblings(xmlNodePtr node) {
+	int i=0;
+	while(node){
+		i++;
+		node = node->next;
+	}
+	return i;
+}

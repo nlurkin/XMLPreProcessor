@@ -39,6 +39,8 @@ public:
 
 	void closeFile();
 
+	int getNSiblings(xmlNodePtr node);
+
 	xmlNodePtr findChildNode(std::string nodeName, xmlNodePtr node);
 	xmlNodePtr findNextSiblingNode(std::string nodeName, xmlNodePtr node);
 	xmlNodePtr findArrayNode(std::string nodeName, int index, xmlNodePtr node);
