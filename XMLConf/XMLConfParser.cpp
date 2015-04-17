@@ -13,14 +13,14 @@ bool XMLConfParser::readFile(std::string fileName){
 	fDoc = xmlParseFile(fileName.data());
 
 	if (fDoc == NULL ) {
-		throw XMLConfParserException("Document not parsed successfully.");
+		throw XMLConfParserFatalException("Document not parsed successfully.");
 		return false;
 	}
 
 	fRoot = xmlDocGetRootElement(fDoc);
 
 	if (fRoot == NULL) {
-		throw XMLConfParserException("Document is empty.");
+		throw XMLConfParserFatalException("Document is empty.");
 		return false;
 	}
 	return true;
@@ -32,9 +32,16 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
 		char* endptr;
 		std::string s = getNodeString(n);
 		double val = strtol(s.data(), &endptr, 0);
-		if(!*endptr) ref = val;
-		else std::cout << "Unable to convert " << s << " to integer" << std::endl;
-		return true;
+		if(!*endptr){
+			ref = val;
+			fReadSuccess++;
+			return true;
+		}
+		else{
+			std::stringstream ss;
+			ss << "Unable to convert " << s << " to integer";
+			fErrorStack.addError(ss);
+		}
 	}
 	return false;
 }
@@ -45,9 +52,16 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 		char* endptr;
 		std::string s = getNodeString(n);
 		double val = strtol(s.data(), &endptr, 0);
-		if(!*endptr) ref = val;
-		else std::cout << "Unable to convert " << s << " to integer" << std::endl;
-		return true;
+		if(!*endptr){
+			ref = val;
+			fReadSuccess++;
+			return true;
+		}
+		else{
+			std::stringstream ss;
+			ss << "Unable to convert " << s << " to unsigned integer";
+			fErrorStack.addError(ss);
+		}
 	}
 	return false;
 }
@@ -58,9 +72,16 @@ bool XMLConfParser::getValue(std::string path, double& ref) {
 		char* endptr;
 		std::string s = getNodeString(n);
 		double val = strtod(s.data(), &endptr);
-		if(!*endptr) ref = val;
-		else std::cout << "Unable to convert " << s << " to integer" << std::endl;
-		return true;
+		if(!*endptr){
+			ref = val;
+			fReadSuccess++;
+			return true;
+		}
+		else{
+			std::stringstream ss;
+			ss << "Unable to convert " << s << " to double";
+			fErrorStack.addError(ss);
+		}
 	}
 	return false;
 }
@@ -70,6 +91,7 @@ bool XMLConfParser::getValue(std::string path, std::string& ref) {
 	if(n){
 		std::string s = getNodeString(n);
 		ref = s;
+		fReadSuccess++;
 		return true;
 	}
 	return false;
@@ -80,6 +102,7 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
 	if(n){
 		std::string s = getNodeString(n);
 		strcpy(ref, s.data());
+		fReadSuccess++;
 		return true;
 	}
 	return false;

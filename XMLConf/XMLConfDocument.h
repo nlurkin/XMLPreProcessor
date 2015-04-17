@@ -9,12 +9,28 @@
 #include <libxml/parser.h>
 #include <vector>
 #include <string>
+#include <sstream>
 
 #ifndef XMLCONFDOCUMENT_H_
 #define XMLCONFDOCUMENT_H_
 
 std::vector<std::string> tokenize(std::string s, char const *separator);
 inline std::vector<std::string> tokenizePath(std::string s) {return tokenize(s, ".");};
+
+class XMLErrorStack {
+public:
+	XMLErrorStack() {};
+	virtual ~XMLErrorStack() {};
+
+	void clear() { fStack.clear(); };
+	void addError(std::string s) { fStack.push_back(s); }
+	void addError(std::stringstream &s) { fStack.push_back(s.str()); }
+
+	void printStack();
+	std::string stringStack();
+private:
+	std::vector<std::string> fStack;
+};
 
 class XMLConfDocument {
 public:
@@ -40,9 +56,13 @@ public:
 		return fRoot;
 	}
 
+	XMLErrorStack getLastError() { return fErrorStack; };
+
 protected:
 	xmlDocPtr fDoc;
 	xmlNodePtr fRoot;
+
+	XMLErrorStack fErrorStack;
 };
 
 #endif /* XMLCONFDOCUMENT_H_ */

@@ -14,7 +14,7 @@
 #ifndef XMLCONFWRITER_H_
 #define XMLCONFWRITER_H_
 
-class XMLConfWriter : XMLConfDocument{
+class XMLConfWriter : public XMLConfDocument{
 public:
 	XMLConfWriter();
 	virtual ~XMLConfWriter();

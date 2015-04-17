@@ -22,7 +22,6 @@ std::vector<std::string> tokenize(std::string s, char const *separator){
     return ret;
 }
 
-
 xmlNodePtr XMLConfDocument::findChildNode(std::string nodeName, xmlNodePtr node){
 	node = node->xmlChildrenNode;
 	while (node != NULL) {
@@ -67,7 +66,9 @@ xmlNodePtr XMLConfDocument::findPathNode(std::string path) {
 	// First element of the path must be the root
 	if(!xmlStrcmp(getRoot()->name, (const xmlChar *)list.front().data())) cur = getRoot();
 	else{
-		std::cout << "Root node " << list.front() << " is not found in XML" << std::endl;
+		std::stringstream ss;
+		ss << "Root node " << list.front() << " is not found in XML" << std::endl;
+		fErrorStack.addError(ss);
 		return NULL;
 	}
 	if(cur){
@@ -115,8 +116,10 @@ xmlNodePtr XMLConfDocument::findPathNode(std::vector<std::string> path, xmlNodeP
 	else cur = findArrayNode(path.front(), id, cur);
 
 	if(!cur){
-		if(id==-1) std::cout << "Node " << path.front() << " is not found" << std::endl;
-		else std::cout << "Node " << path.front() << "[" << id << "] is not found" << std::endl;
+		std::stringstream ss;
+		if(id==-1) ss << "Node " << path.front() << " is not found" << std::endl;
+		else ss << "Node " << path.front() << "[" << id << "] is not found" << std::endl;
+		fErrorStack.addError(ss);
 		return NULL;
 	}
 	if(path.size()==1) return cur;
@@ -131,4 +134,10 @@ std::string XMLConfDocument::readAttribute(std::string attributeName,
 	std::string sattr(reinterpret_cast<const char*>(attr));
 	xmlFree(attr);
 	return sattr;
+}
+
+void XMLErrorStack::printStack() {
+}
+
+std::string XMLErrorStack::stringStack() {
 }
