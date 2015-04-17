@@ -10,6 +10,8 @@
 #include <cstring>
 
 bool XMLConfParser::readFile(std::string fileName){
+	if(fDoc != NULL) closeFile();
+
 	fDoc = xmlParseFile(fileName.data());
 
 	if (fDoc == NULL ) {
@@ -108,3 +110,11 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
 	return false;
 }
 
+bool XMLConfParser::pathExists(std::string path) {
+	xmlNodePtr n = findPathNode(path);
+	if(n){
+		fReadSuccess++;
+		return true;
+	}
+	return false;
+}

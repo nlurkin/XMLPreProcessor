@@ -137,7 +137,13 @@ std::string XMLConfDocument::readAttribute(std::string attributeName,
 }
 
 void XMLErrorStack::printStack() {
+	std::cout << stringStack() << std::endl;
 }
 
 std::string XMLErrorStack::stringStack() {
+	std::stringstream ss;
+	for(auto el : fStack){
+		ss << el;
+	}
+	return ss.str();
 }

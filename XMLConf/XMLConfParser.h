@@ -33,12 +33,15 @@ public:
 
 	bool readFile(std::string fileName);
 	int  getReadSuccess() { return fReadSuccess; };
+	void resetReadSuccess() { fReadSuccess=0; };
 
 	bool getValue(std::string path, int &ref);
 	bool getValue(std::string path, unsigned int &ref);
 	bool getValue(std::string path, double &ref);
 	bool getValue(std::string path, char *ref);
 	bool getValue(std::string path, std::string &ref);
+
+	bool pathExists(std::string path);
 
 private:
 	int fReadSuccess;
