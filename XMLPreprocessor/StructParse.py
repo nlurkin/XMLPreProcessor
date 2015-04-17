@@ -37,6 +37,7 @@ int xml_apply_{struct}({structtype}{struct} *ptr){{
 
 int xml_test_{struct}({structtype}{struct} *ptr){{
     gParser.resetReadSuccess();
+    gParser.startCheckAdditional();
     try {{
 {testers}
     }}
@@ -44,7 +45,27 @@ int xml_test_{struct}({structtype}{struct} *ptr){{
         std::cout << "Fatal error: " << ex.what() << std::endl;
         return -1;
     }}
+    std::cout << "XML tags without struct correspondance: " << std::endl;
+    gParser.printAdditional();
     return gParser.getReadSuccess();
+}}
+
+void* xml_start_compare_{struct}({structtype}{struct} *ptr){{
+    std::string diff = gParser.getFirstDiff();
+
+    return xml_compare_get_address_from_string(ptr, diff);
+}}
+
+void* xml_compare_get_address_from_string({structtype}{struct} *ptr, std::string diff){{
+    if(diff.compare("")==0) return NULL;
+{comparers}
+    else return NULL;
+}}
+
+void* xml_next_compare_{struct}({structtype}{struct} *ptr){{
+    std::string diff = gParser.getNextDiff();
+
+    return xml_compare_get_address_from_string(ptr, diff);
 }}
 
 int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName){{
@@ -70,14 +91,18 @@ fileHeader = """#include "{FileBase}.h"
 #define {capFileBase}PROXY_H_
 
 #ifdef __cplusplus
+#include <string>
 extern "C" {{
 #endif
 int xml_read_file(const char* fileName);
 int xml_apply_{struct}({structtype}{struct} *ptr);
 int xml_test_{struct}({structtype}{struct} *ptr);
+void* xml_start_compare_{struct}({structtype}{struct} *ptr);
+void* xml_next_compare_{struct}({structtype}{struct} *ptr);
 int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName);
 
 #ifdef __cplusplus
+void* xml_compare_get_address_from_string({structtype}{struct} *ptr, std::string diff);
 }}
 #endif
 
@@ -187,7 +212,8 @@ def writeCFile(mainStruct, sDict, tdefDict, dirPath, baseName):
                             FileBase=baseName,
                             setters=writeStructFields(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
                             testers=writeStructTest(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
-                            creators=writeStructCreate(mainStruct, sDict, tdefDict, structName+".", "ptr->")))
+                            creators=writeStructCreate(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            comparers=writeStructStartCompare(mainStruct, sDict, tdefDict, structName+".", "ptr->")))
     
     #Write header file
     with open(dirPath + "/" + baseName +"Proxy.h", "w") as fd:
@@ -316,6 +342,44 @@ def writeStructCreate(mainStruct, sDict, tdefDict, prefixString, prefixPointer, 
                                                           stringPath+"[%i]." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return creator
+
+def writeStructStartCompare(mainStruct, sDict, tdefDict, prefixString, prefixPointer, index=-1):
+    '''
+    Write the start_compare_ function for the specified structure
+    '''
+
+    tester = ""
+    
+    stringBasePath = prefixString
+    ptrBasePath = prefixPointer
+
+    for (vType,vName) in mainStruct.fields:                             # Loop over structure fields
+        vName,arrSize = isArray(vName)                                  # Is it an array?
+        stringPath = stringBasePath + vName                             # Build the path for the string: sname.a.b.c
+        pointerPath = ptrBasePath + vName                               # Build the path for the pointer: ptr->a.b.c
+        
+        if isBasicType(vType):                                          # If basic type, we reached a final node
+            if arrSize==0:                                              # call the get function
+                tester += '\telse if(diff.compare("' + stringPath + \
+                        '")==0) return &(' + pointerPath + ');\n'
+            else:
+                for i in range(0,arrSize):                              # call the get function for each element in the array
+                    tester += '\telse if(!diff.compare("' + stringPath + \
+                    '_' + str(i) + '_")==0) return &(' + pointerPath + ');\n'
+        else:                                                           # Unkown or non-basic type (struct)
+            if "struct" in vType:                                       # we don't care about the struct keyword
+                vType = vType.replace("struct", "").strip()
+            if vType in tdefDict:                                       # If found in the typedef, replace type with the struct name
+                vType = tdefDict[vType]
+            if vType in sDict:                                          # Find it in the dictionary
+                if arrSize==0:                                          # Recurse
+                    tester += writeStructStartCompare(sDict[vType], sDict, tdefDict, stringPath+".", pointerPath+".")
+                else:
+                    for i in range(0,arrSize):                          # Recurse for each element in the array
+                        tester += writeStructStartCompare(sDict[vType], sDict, tdefDict, 
+                                                          stringPath+"_%i_." % i, 
+                                                          pointerPath+"[%i]." % i, i)
+    return tester
 
 def wrapInCatchError(object, bool_statement):
     return "if(!" + bool_statement + ") " + object + ".getLastError().stringStack();"
