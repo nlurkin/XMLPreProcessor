@@ -1,0 +1,9 @@
+
+
+apply_{structname} :
+	return: Number of elements successfully parsed from XML
+			-1 in case of fatal error (file cannot be read)
+
+create_{structname} : 
+	return: Number of bytes written in case of success
+			-1 in case of fatal error (unable to create and write file)
