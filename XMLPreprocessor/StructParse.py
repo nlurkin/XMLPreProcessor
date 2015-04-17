@@ -10,30 +10,50 @@ fileContent = """#include "{FileBase}Proxy.h"
 #include "XMLConfParser.h"
 #include <iostream>
 
-int apply_{struct}({structtype}{struct} *ptr, const char* fileName){{
-    XMLConfParser parser;
+XMLConfParser gParser;
+
+int xml_read_file(const char* fileName){{
     try {{
-    parser.readFile(fileName);
-    
+    gParser.readFile(fileName);
+    }}
+    catch (std::runtime_error& ex) {{
+        std::cout << "Fatal error: " << ex.what() << std::endl;
+        return -1;
+    }}
+    return 0;
+}}
+
+int xml_apply_{struct}({structtype}{struct} *ptr){{
+    gParser.resetReadSuccess();
+    try {{
 {setters}
     }}
     catch (std::runtime_error& ex) {{
         std::cout << "Fatal error: " << ex.what() << std::endl;
         return -1;
     }}
-    return parser.getReadSuccess();
+    return gParser.getReadSuccess();
 }}
 
-/*int test_{struct}({structtype}{struct} *ptr){{
-{testers}}}
-*/
-int create_{struct}({structtype}{struct} *ptr, const char* fileName){{
+int xml_test_{struct}({structtype}{struct} *ptr){{
+    gParser.resetReadSuccess();
+    try {{
+{testers}
+    }}
+    catch (std::runtime_error& ex) {{
+        std::cout << "Fatal error: " << ex.what() << std::endl;
+        return -1;
+    }}
+    return gParser.getReadSuccess();
+}}
+
+int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName){{
     XMLConfWriter writer;
     try {{
     writer.createDocument("{struct}");
     
 {creators}
-    writer.writeDocument(fileName);
+    return writer.writeDocument(fileName);
     
     }}
     catch (std::runtime_error& ex) {{
@@ -52,9 +72,10 @@ fileHeader = """#include "{FileBase}.h"
 #ifdef __cplusplus
 extern "C" {{
 #endif
-int apply_{struct}({structtype}{struct} *ptr, const char* fileName);
-//int test_{struct}({structtype}{struct} *ptr);
-int create_{struct}({structtype}{struct} *ptr, const char* fileName);
+int xml_read_file(const char* fileName);
+int xml_apply_{struct}({structtype}{struct} *ptr);
+int xml_test_{struct}({structtype}{struct} *ptr);
+int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName);
 
 #ifdef __cplusplus
 }}
@@ -192,12 +213,12 @@ def writeStructFields(mainStruct, sDict, tdefDict, prefixString, prefixPointer, 
         
         if isBasicType(vType):                                          # If basic type, we reached a final node
             if arrSize==0:                                              # call the get function
-                setters += "\t" + wrapInCatchError("parser", "parser." + \
+                setters += "\t" + wrapInCatchError("gParser", "gParser." + \
                         getFunctionType(vType) + '("' + stringPath + \
                         '",' + pointerPath + ")") + "\n"
             else:                                                       # call the get function for each element in the array
                 for i in range(0,arrSize):
-                    setters += "\t" + wrapInCatchError("parser", "parser." + \
+                    setters += "\t" + wrapInCatchError("gParser", "gParser." + \
                         getFunctionType(vType) + '("' + stringPath + \
                         '[' + str(i) + ']",' + pointerPath + "[" + \
                         str(i) + "])") + "\n"
@@ -233,12 +254,14 @@ def writeStructTest(mainStruct, sDict, tdefDict, prefixString, prefixPointer, in
         
         if isBasicType(vType):                                          # If basic type, we reached a final node
             if arrSize==0:                                              # call the get function
-                tester += '\tif(!exists("' + stringPath + '")) printf("'+ \
-                pointerPath+ ' was not found in XML file");\n'
+                tester += '\tif(!gParser.pathExists("' + stringPath + \
+                '")) std::cout << "'+ stringPath + \
+                ' was not found in XML file" << std::endl;\n'
             else:
                 for i in range(0,arrSize):                              # call the get function for each element in the array
-                    tester += '\tif(!exists("' + stringPath + '_' + str(i) + '_")) printf("'+\
-                    pointerPath+'[' + str(i) + '] was not found in XML file");\n'
+                    tester += '\tif(!gParser.pathExists("' + stringPath + \
+                    '_' + str(i) + '_")) std::cout << "'+ stringPath + \
+                    '[' + str(i) + '] was not found in XML file" << std::endl;\n'
         else:                                                           # Unkown or non-basic type (struct)
             if "struct" in vType:                                       # we don't care about the struct keyword
                 vType = vType.replace("struct", "").strip()
