@@ -8,22 +8,39 @@ import re
 fileContent = """#include "{FileBase}Proxy.h"
 #include "XMLConfWriter.h"
 #include "XMLConfParser.h"
+#include <iostream>
 
-void apply_{struct}({struct} *ptr, const char* fileName){{
+int apply_{struct}({structtype}{struct} *ptr, const char* fileName){{
     XMLConfParser parser;
+    try {{
     parser.readFile(fileName);
     
-{setters}}}
+{setters}
+    }}
+    catch (std::runtime_error& ex) {{
+        std::cout << "Fatal error: " << ex.what() << std::endl;
+        return -1;
+    }}
+    return parser.getReadSuccess();
+}}
 
-/*void test_{struct}({struct} *ptr){{
+/*int test_{struct}({structtype}{struct} *ptr){{
 {testers}}}
 */
-void create_{struct}({struct} *ptr, const char* fileName){{
+int create_{struct}({structtype}{struct} *ptr, const char* fileName){{
     XMLConfWriter writer;
+    try {{
     writer.createDocument("{struct}");
     
 {creators}
     writer.writeDocument(fileName);
+    
+    }}
+    catch (std::runtime_error& ex) {{
+        std::cout << "Fatal error: " << ex.what() << std::endl;
+        return -1;
+    }}
+    return 0;
 }}
 """
 
@@ -35,9 +52,9 @@ fileHeader = """#include "{FileBase}.h"
 #ifdef __cplusplus
 extern "C" {{
 #endif
-void apply_{struct}({struct} *ptr, const char* fileName);
-//void test_{struct}({struct} *ptr);
-void create_{struct}({struct} *ptr, const char* fileName);
+int apply_{struct}({structtype}{struct} *ptr, const char* fileName);
+//int test_{struct}({structtype}{struct} *ptr);
+int create_{struct}({structtype}{struct} *ptr, const char* fileName);
 
 #ifdef __cplusplus
 }}
@@ -50,7 +67,7 @@ void create_{struct}({struct} *ptr, const char* fileName);
 class struct():
     def __init__(self):
         self.name = ""
-        self.typedef = ""
+        self.typedef = None
         self.fields = []
     
     def add(self, vartype, name):
@@ -59,166 +76,240 @@ class struct():
     def printFields(self):
         text = ""
         for (k,v) in self.fields:
-            text = text + "\t" + k + " " + v + ";\n"
+            text = text + "\t" + k + " => " + v + ";\n"
         return text
     
     def __repr__(self):
-        if self.typedef=="":
+        if self.typedef is None:
             return "struct " + self.name + " {\n" + self.printFields() + "};"
         else:
             return "typedef struct " + self.name + " {\n" + self.printFields() + "} " + self.typedef +";"
 
 def parseStruct(structLines):
     s = struct()
-    m = re.findall("(?:typedef )?struct (.*)\s*{(.*)}\s*(.*?)\s*;", "".join(structLines), re.MULTILINE | re.DOTALL)
-    if m:
-        s.name = m[0][0]
-        s.typedef = m[0][2]
+    m = re.findall("(?:typedef )?struct (.*)\s*{(.*)}\s*(.*?)\s*;", "".join(structLines), 
+                   re.MULTILINE | re.DOTALL) # regular expression to find struct name and eventual typedef
     
-    for l in m[0][1].split("\n"):
-        l = l.strip()
-        if l == "":
-            continue
-        arr = l.split()
-        s.add(" ".join(arr[:-1]), arr[-1][:-1])
+    if m:                                   # set them if found
+        s.name = m[0][0].strip(" \n")
+        tdef = m[0][2].strip(" \n")
+        if tdef!="": 
+            s.typedef = tdef 
+    
+        # Split the lines into individual statements with \n and ;
+        listStatements = [x.split("\n") for x in m[0][1].split(";")]
+        listStatements = [item for sublist in listStatements for item in sublist]
+        for l in listStatements:
+            l = l.strip()
+            if l == "":                                 #Skip empty lines
+                continue
+            arr = l.split()                             # Split to get the variable type and names
+            varNames = arr[-1].split(",")               # Split in case of several names
+            for v in varNames:
+                s.add(" ".join(arr[:-1]), v.strip(";")) # Add the variables
     return s
     
 def parse(fileName):
     structArr = list()
     structLines = None
+    inStruct = -1
     with open(fileName) as fd:
         for line in fd:
-            if line.startswith('#'):
+            if line.startswith('#'):                # Comment: skip line
                 continue
-            if "struct" in line:
-                if structLines:
+            
+            line = line.strip("\n")
+            if "struct" in line and inStruct<=0:    # New struct definition found (struct not within a struct)
+                inStruct += 1
+                if structLines:                     # Skip when starting the for loop (structLines not yet initialised) 
                     structArr.append(structLines)
                 structLines = [line]
-            else:
+                    
+            else:                                   # Already in a struct: append line to the current struct
                 if structLines:
                     structLines.append(line)
-    
-    if structLines:
+            
+            #Count number of opening and closing brackets to understand when we exit the current struct definition 
+            if "{" in line:
+                inStruct += 1
+            if "}" in line:
+                inStruct -= 1
+                if inStruct == 0:
+                    inStruct = -1
+
+    if structLines:                                 # Include last struct in array of struct
         structArr.append(structLines)
         
-    structDict ={}
-    for el in structArr:
+    structDict = {}
+    typedefDict = {}
+    
+    for el in structArr:                            #Parse each struct individually and add them to the dictionary of struct
         s = parseStruct(el)
         structDict[s.name] = s
-        if not s.typedef == "":
-            structDict[s.typedef] = s
+        if not s.typedef is None:                   # Also build the dictionary of typedef
+           typedefDict[s.typedef] = s.name
         
-    return structDict
+    return (structDict,typedefDict)
 
-def writeCFile(mainStruct, sDict, dirPath, baseName):
+def writeCFile(mainStruct, sDict, tdefDict, dirPath, baseName):
+    if mainStruct.typedef is None:
+        structName = mainStruct.name
+        structType = "struct "
+    else:
+        structName = mainStruct.typedef
+        structType = ""
+    
+    #Write source file
     with open(dirPath +"/" + baseName +"Proxy.cc", "w") as fd:
-        fd.write(fileContent.format(struct=mainStruct.typedef,
-        					FileBase=baseName,
-                            setters=writeStructFields(mainStruct, sDict, mainStruct.typedef+".", "ptr->"),
-                            testers=writeStructTest(mainStruct, sDict, mainStruct.typedef+".", "ptr->"),
-                            creators=writeStructCreate(mainStruct, sDict, mainStruct.typedef+".", "ptr->")))
+        fd.write(fileContent.format(structtype=structType,
+                            struct=structName,
+                            FileBase=baseName,
+                            setters=writeStructFields(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            testers=writeStructTest(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            creators=writeStructCreate(mainStruct, sDict, tdefDict, structName+".", "ptr->")))
+    
+    #Write header file
     with open(dirPath + "/" + baseName +"Proxy.h", "w") as fd:
-        fd.write(fileHeader.format(struct=mainStruct.typedef, 
-							       FileBase=baseName,
+        fd.write(fileHeader.format(structtype=structType,
+                                   struct=structName, 
+                                   FileBase=baseName,
                                    capFileBase=baseName.upper()))
 
 
-def writeStructFields(mainStruct, sDict, prefixString, prefixPointer, index=-1):
+def writeStructFields(mainStruct, sDict, tdefDict, prefixString, prefixPointer, index=-1):
+    '''
+    Write the apply_ function for the specified structure
+    '''
     setters = ""
     
     stringBasePath = prefixString
     ptrBasePath = prefixPointer
 
-    for (vType,vName) in mainStruct.fields:
-        vName,arrSize = isArray(vName)
-        stringPath = stringBasePath + vName
-        pointerPath = ptrBasePath + vName
+    for (vType,vName) in mainStruct.fields:                             # Loop over structure fields
+        vName,arrSize = isArray(vName)                                  # Is it an array?
+        stringPath = stringBasePath + vName                             # Build the path for the string: sname.a.b.c
+        pointerPath = ptrBasePath + vName                               # Build the path for the pointer: ptr->a.b.c
         
-        if isBasicType(vType):
-            if arrSize==0:
-                setters += "\tparser." + getFunctionType(vType) + \
-                '("' + stringPath + '",' + pointerPath + ");\n"
-            else:
+        if isBasicType(vType):                                          # If basic type, we reached a final node
+            if arrSize==0:                                              # call the get function
+                setters += "\t" + wrapInCatchError("parser", "parser." + \
+                        getFunctionType(vType) + '("' + stringPath + \
+                        '",' + pointerPath + ")") + "\n"
+            else:                                                       # call the get function for each element in the array
                 for i in range(0,arrSize):
-                    setters += "\tparser." +getFunctionType(vType) + \
-                    '("' + stringPath + '[' + str(i) + ']",' + \
-                    pointerPath + "[" + str(i) + "]);\n"
-        else:
-            if vType in sDict:
-                if arrSize==0:
-                    setters += writeStructFields(sDict[vType], sDict, stringPath+".", pointerPath+".")
-                else:
+                    setters += "\t" + wrapInCatchError("parser", "parser." + \
+                        getFunctionType(vType) + '("' + stringPath + \
+                        '[' + str(i) + ']",' + pointerPath + "[" + \
+                        str(i) + "])") + "\n"
+        else:                                                           # Unkown or non-basic type (struct)
+            if "struct" in vType:                                       # we don't care about the struct keyword
+                vType = vType.replace("struct", "").strip()
+            if vType in tdefDict:                                       # If found in the typedef, replace type with the struct name
+             vType = tdefDict[vType]
+            if vType in sDict:                                          # Find it in the dictionary
+                if arrSize==0:                                          # Recurse
+                    setters += writeStructFields(sDict[vType], sDict, tdefDict, stringPath+".", pointerPath+".")
+                else:                                                   # Recurse for each element in the array
                     for i in range(0,arrSize):
-                        setters += writeStructFields(sDict[vType], sDict, 
+                        setters += writeStructFields(sDict[vType], sDict, tdefDict, 
                                                           stringPath+"[%i]." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return setters
 
-def writeStructTest(mainStruct, sDict, prefixString, prefixPointer, index=-1):
+def writeStructTest(mainStruct, sDict, tdefDict, prefixString, prefixPointer, index=-1):
+    '''
+    Write the test_ function for the specified structure
+    '''
+
     tester = ""
     
     stringBasePath = prefixString
     ptrBasePath = prefixPointer
 
-    for (vType,vName) in mainStruct.fields:
-        vName,arrSize = isArray(vName)
-        stringPath = stringBasePath + vName
-        pointerPath = ptrBasePath + vName
+    for (vType,vName) in mainStruct.fields:                             # Loop over structure fields
+        vName,arrSize = isArray(vName)                                  # Is it an array?
+        stringPath = stringBasePath + vName                             # Build the path for the string: sname.a.b.c
+        pointerPath = ptrBasePath + vName                               # Build the path for the pointer: ptr->a.b.c
         
-        if isBasicType(vType):
-            if arrSize==0:
+        if isBasicType(vType):                                          # If basic type, we reached a final node
+            if arrSize==0:                                              # call the get function
                 tester += '\tif(!exists("' + stringPath + '")) printf("'+ \
                 pointerPath+ ' was not found in XML file");\n'
             else:
-                for i in range(0,arrSize):
+                for i in range(0,arrSize):                              # call the get function for each element in the array
                     tester += '\tif(!exists("' + stringPath + '_' + str(i) + '_")) printf("'+\
                     pointerPath+'[' + str(i) + '] was not found in XML file");\n'
-        else:
-            if vType in sDict:
-                if arrSize==0:
-                    tester += writeStructTest(sDict[vType], sDict, stringPath+".", pointerPath+".")
+        else:                                                           # Unkown or non-basic type (struct)
+            if "struct" in vType:                                       # we don't care about the struct keyword
+                vType = vType.replace("struct", "").strip()
+            if vType in tdefDict:                                       # If found in the typedef, replace type with the struct name
+                vType = tdefDict[vType]
+            if vType in sDict:                                          # Find it in the dictionary
+                if arrSize==0:                                          # Recurse
+                    tester += writeStructTest(sDict[vType], sDict, tdefDict, stringPath+".", pointerPath+".")
                 else:
-                    for i in range(0,arrSize):
-                        tester += writeStructTest(sDict[vType], sDict, 
+                    for i in range(0,arrSize):                          # Recurse for each element in the array
+                        tester += writeStructTest(sDict[vType], sDict, tdefDict, 
                                                           stringPath+"_%i_." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return tester
 
-def writeStructCreate(mainStruct, sDict, prefixString, prefixPointer, index=-1):
+def writeStructCreate(mainStruct, sDict, tdefDict, prefixString, prefixPointer, index=-1):
+    '''
+    Write the create_ function for the specified structure
+    '''
     creator = ""
     
     stringBasePath = prefixString
     ptrBasePath = prefixPointer
 
-    for (vType,vName) in mainStruct.fields:
-        vName,arrSize = isArray(vName)
-        stringPath = stringBasePath + vName
-        pointerPath = ptrBasePath + vName
+    for (vType,vName) in mainStruct.fields:                             # Loop over structure fields
+        vName,arrSize = isArray(vName)                                  # Is it an array?
+        stringPath = stringBasePath + vName                             # Build the path for the string: sname.a.b.c
+        pointerPath = ptrBasePath + vName                               # Build the path for the pointer: ptr->a.b.c
         
-        if isBasicType(vType):
-            if arrSize==0:
-                creator += '\twriter.' + putFunctionType(vType) + '("' + stringPath + '",' + pointerPath + ');\n'
+        if isBasicType(vType):                                          # If basic type, we reached a final node
+            if arrSize==0:                                              # call the get function
+                creator += '\t' + wrapInCatchError("writer", 'writer.' + \
+                        putFunctionType(vType) + '("' + stringPath + \
+                        '",' + pointerPath + ')')+'\n'
             else:
-                for i in range(0,arrSize):
-                    creator += '\twriter.' + putFunctionType(vType) + '("' + stringPath + '[' + str(i) + ']",' + \
-                    pointerPath+'[' + str(i) + ']);\n'
-        else:
-            if vType in sDict:
-                if arrSize==0:
-                    creator += writeStructCreate(sDict[vType], sDict, stringPath+".", pointerPath+".")
+                for i in range(0,arrSize):                              # call the get function for each element in the array
+                    creator += '\t' + wrapInCatchError("writer", 'writer.' + \
+                            putFunctionType(vType) + '("' + stringPath + \
+                            '[' + str(i) + ']",' + pointerPath+'[' + \
+                            str(i) + '])')+'\n'
+        else:                                                           # Unkown or non-basic type (struct)
+            if "struct" in vType:                                       # we don't care about the struct keyword
+                vType = vType.replace("struct", "").strip()
+            if vType in tdefDict:                                       # If found in the typedef, replace type with the struct name
+                vType = tdefDict[vType]
+            if vType in sDict:                                          # Find it in the dictionary
+                if arrSize==0:                                          # Recurse
+                    creator += writeStructCreate(sDict[vType], sDict, tdefDict, stringPath+".", pointerPath+".")
                 else:
-                    for i in range(0,arrSize):
-                        creator += writeStructCreate(sDict[vType], sDict, 
+                    for i in range(0,arrSize):                          # Recurse for each element in the array
+                        creator += writeStructCreate(sDict[vType], sDict, tdefDict, 
                                                           stringPath+"[%i]." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return creator
 
+def wrapInCatchError(object, bool_statement):
+    return "if(!" + bool_statement + ") " + object + ".getLastError().stringStack();"
+
 def isBasicType(vtype):
+    '''
+    Is the given type a basic type
+    '''
     if vtype=="int":
+        return True
+    if vtype=="long int":
         return True
     elif vtype=="unsigned int":
         return True
     elif vtype=="xmlchar":
+        return True
+    elif vtype=="float":
         return True
     elif vtype=="double":
         return True
