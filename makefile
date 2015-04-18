@@ -1,14 +1,10 @@
 
-all: XMLConf Example
-
-XMLConf:
+all:
 	make -C XMLConf
-	
-Example:
 	make -C Example
 
 clean: 
 	make -C XMLConf clean
 	make -C Example clean
 	
-.phony: clean all
+.phony: clean all 

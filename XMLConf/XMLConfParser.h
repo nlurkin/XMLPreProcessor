@@ -17,14 +17,14 @@
 class XMLConfParserException: public std::runtime_error
 {
 public:
-	XMLConfParserException(std::string message) : runtime_error(message){};
-	XMLConfParserException(const std::stringstream &message) : runtime_error(message.str()){};
+	XMLConfParserException(std::string message) : std::runtime_error(message){};
+	XMLConfParserException(const std::stringstream &message) : std::runtime_error(message.str()){};
 };
 class XMLConfParserFatalException: public std::runtime_error
 {
 public:
-	XMLConfParserFatalException(std::string message) : runtime_error(message){};
-	XMLConfParserFatalException(const std::stringstream &message) : runtime_error(message.str()){};
+	XMLConfParserFatalException(std::string message) : std::runtime_error(message){};
+	XMLConfParserFatalException(const std::stringstream &message) : std::runtime_error(message.str()){};
 };
 
 class XMLConfParser : public XMLConfDocument{

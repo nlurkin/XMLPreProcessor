@@ -84,9 +84,19 @@
  \endcode
  The path used in these methods is a string representation of the structure field. Using the 
  example struct (full code can be found in Example/main_writer.cc):
- \dontinclude Example/main_parser.cc
- \skipline parser;
+ 
+ \dontinclude Example/main_writer.cc
+ We must first create the in-memory XML document and initialise the structure:
+ \skipline writer;
+ \until createDocument
+ Then the desired elements of the structure are added to the XML document.
+ \skipline addPathAsHex
  \until my_double
+ And finally the document is written on disk
+ \skipline writeDocument
+ 
+ The resulting XML file is 
+ \verbinclude Example/example_writer.xml
  
  
  \section C_Interface C Interface

@@ -6,7 +6,7 @@ CFLAGS	= -O -Wall -fPIC -g3 --std=c++11
 
 all: ex_struct.xml example_parse example_write
 
-ex_struct.xml: example_proxy_create example_parse
+ex_struct.xml: example_proxy_create example_parse example_write
 	@./run_all_examples.sh
 
 example_proxy_create: main_proxy.cc ex_struct.h ex_structProxy.h ex_structProxy.cc

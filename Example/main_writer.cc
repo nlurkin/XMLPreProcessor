@@ -21,6 +21,7 @@ int main(){
 	test.my_substruct.my_double = 5.5;
 
 	writer.createDocument("exampleStruct");
+
 	writer.addPathAsHex("exampleStruct.version", test.version);
 	writer.addPath("exampleStruct.name", test.name);
 	writer.addPath("exampleStruct.my_substruct.my_double", test.my_substruct.my_double);
