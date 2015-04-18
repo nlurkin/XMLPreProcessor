@@ -1,0 +1,103 @@
+/*! \mainpage
+ \tableofcontents
+ This library is intended to be used to create and load XML files to a C structure. \n
+ It is a 2-part software described hereafter. \n
+ The first part is a C++ library that is used to parse and retrieve values from XML file, and create
+ XMl files from a list of specifications. This library is described in section \ref cpplib \n
+ The second part is a python script that generates a C code to automatically create XML from a C structure, 
+ fill the C structure from an XML file and compare an XML file with the C structure to find the common and
+ and different items. The generated C interface is described in section \ref C_Interface
+ The usage of the python script is described in \ref xmlpp
+ 
+ \section cpplib C++ Library
+ This C++ library is a XML parser based on libxml2. 
+ As an example, the following structure will be used
+ \include Example/ex_struct.h
+ The corresponding complete XML file is 
+ \include Example/ex_struct.xml
+ The following XML is going to be used as an example of partial XML also containing non 
+ existing fields
+ \include Example/partial_ex_struct.xml
+ 
+ Both XMLConfParser and XMLConfWriter modules relies on the XMLConfDocument class. The latter 
+ provides the back-end for navigating the XML document and will not be described here.
+ \subsection XMLConfParser XMLConfParser
+ It provides a useful API to retrieve values from the XML files through the getValue() method 
+ \code
+ bool getValue(std::string path, int &ref);
+ bool getValue(std::string path, unsigned int &ref);
+ bool getValue(std::string path, double &ref);
+ bool getValue(std::string path, char *ref);
+ bool getValue(std::string path, std::string &ref);
+ \endcode
+ The path used in these methods is a string representation of the structure field. Using the 
+ example struct (full code can be found in Example/main_parser.cc):
+ \dontinclude Example/main_parser.cc
+ \skipline parser;
+ \until my_double
+ 
+ 
+ It also provides methods to check the content of the XML file. 
+ It can tell whether the tag for a specific field of the C structure is found in the XML:
+ \skipline pathExists
+ \until my_double is
+ Which produces the following output:
+ \verbinclude Example/DocGen/parser_path_exist.txt
+ 
+ 
+ It can print a list of tags that are present in the XML but not corresponding to any of the paths provided
+ with the addCheckElement() method.
+ This can be used to check for tags present in the XML but not corresponding to any of the field present
+ in the C structure:
+ \skipline startCheckAdditional
+ \until printAdditional
+ This piece of code will output:
+ \verbinclude Example/DocGen/parser_add.txt
+ 
+ 
+ The last feature offered is the possibility to get the list of paths you are interested in 
+ that are present in the XML. This list is created from the paths used on pathExists(). 
+ In the example we called pathExists() for
+ \copydoc list_pe
+ 
+ And the xml provides new values for 
+  - exampleStruct.name
+  - exampleStruct.external_var
+  - exampleStruct.my_substruct.my_double 
+ 
+ The code hereafter shows the usage of this feature:
+ \skipline string diff
+ \until }
+ And produces the following output:
+ \verbinclude Example/DocGen/parser_diff.txt
+ 
+ \subsection XMLConfWriter XMLConfWriter
+ 
+  It provides a useful API to write values in the XML files through the addPath() method 
+ \code
+ bool addPath(std::string path, unsigned int ref);
+ bool addPath(std::string path, int ref);
+ bool addPath(std::string path, double ref);
+ bool addPath(std::string path, char* ref);
+ bool addPath(std::string path, std::string ref);
+ bool addPathAsHex(std::string path, int ref);
+ \endcode
+ The path used in these methods is a string representation of the structure field. Using the 
+ example struct (full code can be found in Example/main_writer.cc):
+ \dontinclude Example/main_parser.cc
+ \skipline parser;
+ \until my_double
+ 
+ 
+ \section C_Interface C Interface
+ 
+ \section xmlpp xmlpp.py script
+ This python script takes as input a header file describing C structures and generates the code for the 
+ automatic structure filling and XML creation. If more than one structure is present in the header
+ file, you must specify which one is the top one. Use it with:
+ \code
+ xmlpp.py {headerFile.h} --struct {topStructure}
+ \endcode
+ This will produce besides your {headerFile.h} two C++ files {headerFileProxy.h} and {headerFileProxy.cc} 
+ that you should include in your compilation.
+ */
