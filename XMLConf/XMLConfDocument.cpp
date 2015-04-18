@@ -54,7 +54,9 @@ void XMLConfDocument::closeFile() {
 std::string XMLConfDocument::getNodeString(xmlNodePtr node){
 	xmlChar *key;
 	key = xmlNodeListGetString(fDoc, node->xmlChildrenNode, 1);
-	std::string sRet(reinterpret_cast<const char*>(key));
+	std::string sRet;
+	if(key!=NULL) sRet = reinterpret_cast<const char*>(key);
+	else sRet = "";
 	xmlFree(key);
 	return sRet;
 }
