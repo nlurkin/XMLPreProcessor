@@ -21,13 +21,6 @@ public:
 
 	void createDocument(std::string structName);
 
-	xmlNodePtr addNode(std::string nodeName, xmlNodePtr node);
-	xmlNodePtr addNodeArray(std::string nodeName, int index, xmlNodePtr node);
-	void addNodeValue(std::string value, xmlNodePtr node);
-
-	xmlNodePtr addPathNode(std::string path);
-	xmlNodePtr addPathNode(std::vector<std::string> path, xmlNodePtr cur);
-
 	void printDocument();
 	bool writeDocument(std::string fileName);
 
@@ -36,8 +29,15 @@ public:
 	bool addPath(std::string path, double ref);
 	bool addPath(std::string path, char* ref);
 	bool addPath(std::string path, std::string ref);
-
 	bool addPathAsHex(std::string path, int ref);
+
+private:
+	xmlNodePtr addNode(std::string nodeName, xmlNodePtr node);
+	xmlNodePtr addNodeArray(std::string nodeName, int index, xmlNodePtr node);
+	void addNodeValue(std::string value, xmlNodePtr node);
+
+	xmlNodePtr addPathNode(std::string path);
+	xmlNodePtr addPathNode(std::vector<std::string> path, xmlNodePtr cur);
 };
 
 #endif /* XMLCONFWRITER_H_ */
