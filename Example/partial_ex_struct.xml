@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<exampleStruct>
+  <name></name>
+  <external_var>3</external_var>
+  <my_substruct>
+    <my_double>0</my_double>
+  </my_substruct>
+</exampleStruct>
