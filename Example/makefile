@@ -4,12 +4,12 @@ LIB = -lxml2 -lxmlpreprocessor
 CFLAGS	= -O -Wall -fPIC -g3 --std=c++11
 
 
-all: ex_struct.xml example_parse example_write
+all: outputStruct.xml
 
-ex_struct.xml: example_proxy_create example_parse example_write
+outputStruct.xml: example_proxy example_parse example_write
 	@./run_all_examples.sh
 
-example_proxy_create: main_proxy.cc ex_struct.h ex_structProxy.h ex_structProxy.cc
+example_proxy: main_proxy.cc ex_struct.h ex_structProxy.h ex_structProxy.cc
 	g++ -o $@ $^ $(CFLAGS) $(INC) $(LIBDIR) $(LIB)   
 
 example_parse: main_parser.cc ex_struct.h
@@ -25,10 +25,10 @@ ex_structProxy.h: ex_struct.h
 	
 clean:
 	rm -f ex_structProxy.*
-	rm -f ex_struct.xml
 	rm -f example_writer.xml
 	rm -f example_parse
 	rm -f example_write
-	rm -f example_proxy_create
+	rm -f example_proxy
 	rm -f parse_output.txt
 	rm -rf DocGen
+	rm -f outputStruct.xml

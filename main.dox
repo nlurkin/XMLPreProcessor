@@ -99,8 +99,6 @@
  \verbinclude Example/example_writer.xml
  
  
- \section C_Interface C Interface
- 
  \section xmlpp xmlpp.py script
  This python script takes as input a header file describing C structures and generates the code for the 
  automatic structure filling and XML creation. If more than one structure is present in the header
@@ -110,4 +108,68 @@
  \endcode
  This will produce besides your {headerFile.h} two C++ files {headerFileProxy.h} and {headerFileProxy.cc} 
  that you should include in your compilation.
+ 
+ 
+ \section C_Interface C Interface
+ This C interface is probably the only part that most users will use. Starting from the example structure 
+ given above, the xmlpp.py script will generate ex_structProxy.h and ex_structProxy.cc. These files provide 
+ the following functions, callable from C code: 
+ \dontinclude Example/ex_structProxy.h
+ \skipline read_file
+ \until create
+ 
+ \dontinclude Example/ex_structProxy.h
+  - \skipline read_file
+  Use this function to read a new XML file.\n
+  fileName is the full path to the XML file to read.
+  - \line apply
+  Use this function to apply the loaded XML file to your structure. \n
+  ptr is a pointer to the structure you want to fill.
+  - \line test
+  Use this function to print the list of elements in the structure that are not present in the XML and 
+  print the list of tags present in the XML that are not in the structure. 
+  - \line start
+  The next two functions work together and are used to get the list of fields that received a new value 
+  from the XML.
+  This one should be used first and returns a pointer to the first modified element. If no element has 
+  been modified it return a NULL pointer.
+  - \line next
+  This function will return a pointer to the next modified element. After reaching the last element this
+  function will return a NULL pointer.
+  - \line create
+  Use this function to create an XML file corresponding to the structure. The current values of the structure
+  are set in the file.\n
+  ptr is a pointer to the reference structure.
+  fileName is the full path to the XML file to write.
+  
+  
+  A fully working example using this interface can be found in Example/main_proxy.cc\n
+  \dontinclude Example/main_proxy.cc
+  Start by declaring the structure and reading the new XML file:
+  \skipline test;
+  \until read_file
+  Then apply the content of the file to structure to initialise it:
+  \line apply
+  We can then do the operation again with a partial XML file
+  \skipline read_file
+  \until apply
+  The structure now contains the following values:
+  \verbinclude Example/DocGen/proxy_values.txt
+  Then we print the list of differences between the structure and the file
+  \skipline test
+  giving the following output:
+  \verbinclude Example/DocGen/proxy_diff.txt
+  We can determine which fields of the structure have been modified in the XML. We request the
+  pointer to the first modified element and we can compare the address of the pointer with the address of
+  our structure fields to determine which one. We then loop on the next elements until the pointer becomes
+  NULL, indicating the past-the-end element. 
+  \skipline void
+  \until }
+  This outputs the following:
+  \verbinclude Example/DocGen/proxy_mod.txt
+  We can finally finish by modifying the structure and write the final XML:
+  \skipline strcpy
+  \until create
+  Which is 
+  \verbinclude Example/outputStruct.xml 
  */
