@@ -14,7 +14,6 @@
  *
  * @param fileName Full path to the XML file to be read
  * @return true if the file could be read and parsed. Else false.
- * @todo Print the error message in case of malformated XML
  */
 bool XMLConfParser::readFile(std::string fileName){
 	if(fDoc != NULL) closeFile();
