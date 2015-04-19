@@ -100,7 +100,7 @@ def printHelp(args):
     args.parserRef.print_help()
     
 def parseArgs():
-    program_version_message = "Version %s." % __rev__
+    program_version_message = "Version %s." % __version__
     program_short_description = __descr__
     
     parser = ArgumentParser(description=program_short_description, formatter_class=RawDescriptionHelpFormatter)
