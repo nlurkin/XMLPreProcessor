@@ -16,10 +16,12 @@ using namespace std;
 int main(){
 	exampleStruct test;
 
-	xml_read_file("ex_struct.xml");
+	if(xml_read_file_exampleStruct("ex_struct.xml")==-1)
+		cout << "Fatal error: " << xml_getLastFatalError_exampleStruct() << endl;
 	xml_apply_exampleStruct(&test);
 
-	xml_read_file("partial_ex_struct.xml");
+	if(xml_read_file_exampleStruct("partial_ex_struct.xml")==-1)
+		cout << "Fatal error: " << xml_getLastFatalError_exampleStruct() << endl;
 	xml_apply_exampleStruct(&test);
 
 	cout << "Differences:" << endl;
