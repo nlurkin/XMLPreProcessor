@@ -96,6 +96,34 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
  * @warning Fill the error stack
  * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
  * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found and the value can be transformed into float). Else false.
+ */
+bool XMLConfParser::getValue(std::string path, float& ref) {
+	xmlNodePtr n = findPathNode(path);
+	if(n){
+		char* endptr;
+		std::string s = getNodeString(n);
+		double val = strtof(s.data(), &endptr, 0);
+		if(!*endptr){
+			ref = val;
+			fReadSuccess++;
+			return true;
+		}
+		else{
+			std::stringstream ss;
+			ss << "Unable to convert " << s << " to float";
+			fErrorStack.addError(ss);
+		}
+	}
+	return false;
+}
+
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @warning Fill the error stack
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
  * @return true in case of success (path is found and the value can be transformed into double). Else false.
  */
 bool XMLConfParser::getValue(std::string path, double& ref) {

@@ -29,8 +29,9 @@ public:
 	void printDocument(); //!< Print the XML document in the output
 	bool writeDocument(std::string fileName); //!< Write the document at the specified path
 
-	bool addPath(std::string path, unsigned int ref); //!< Add a new path to the document
 	bool addPath(std::string path, int ref); //!< Add a new path to the document
+	bool addPath(std::string path, unsigned int ref); //!< Add a new path to the document
+	bool addPath(std::string path, float ref); //!< Add a new path to the document
 	bool addPath(std::string path, double ref); //!< Add a new path to the document
 	bool addPath(std::string path, char* ref); //!< Add a new path to the document
 	bool addPath(std::string path, std::string ref); //!< Add a new path to the document

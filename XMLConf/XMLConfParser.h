@@ -49,6 +49,7 @@ public:
 
 	bool getValue(std::string path, int &ref); //!< Get a value as int
 	bool getValue(std::string path, unsigned int &ref); //!< Get a value as unsigned int
+	bool getValue(std::string path, float &ref); //!< Get a value as float
 	bool getValue(std::string path, double &ref); //!< Get a value as double
 	bool getValue(std::string path, char *ref); //!< Get a value as c-string (do not require conversion)
 	bool getValue(std::string path, std::string &ref); //!< Get a value as std::string (do not require conversion)

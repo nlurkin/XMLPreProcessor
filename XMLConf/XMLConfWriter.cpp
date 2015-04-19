@@ -156,6 +156,23 @@ bool XMLConfWriter::addPath(std::string path, int ref) {
  * @param ref Reference value
  * @return true if the path could be added, else false
  */
+bool XMLConfWriter::addPath(std::string path, float ref) {
+	std::stringstream s;
+	s << ref;
+	xmlNodePtr node = addPathNode(path);
+	if(node){
+		addNodeValue(s.str(), node);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Add a new path to the XML document, with the value contained in ref
+ * @param path Path to add. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Reference value
+ * @return true if the path could be added, else false
+ */
 bool XMLConfWriter::addPath(std::string path, double ref) {
 	std::stringstream s;
 	s << ref;

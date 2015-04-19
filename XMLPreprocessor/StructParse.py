@@ -425,6 +425,8 @@ def putFunctionType(vType):
         return "addPath"
     elif vType=="double":
         return "addPath"
+    elif vType=="float":
+        return "addPath"
     
 def getFunctionType(vType):
     if vType=="int":
@@ -436,5 +438,7 @@ def getFunctionType(vType):
     elif vType=="xmlchar":
         return "getValue"
     elif vType=="double":
+        return "getValue"
+    elif vType=="float":
         return "getValue"
     
