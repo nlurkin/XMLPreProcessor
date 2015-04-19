@@ -14,12 +14,6 @@
 #ifndef XMLCONFPARSER_H_
 #define XMLCONFPARSER_H_
 
-class XMLConfParserException: public std::runtime_error
-{
-public:
-	XMLConfParserException(std::string message) : std::runtime_error(message){};
-	XMLConfParserException(const std::stringstream &message) : std::runtime_error(message.str()){};
-};
 class XMLConfParserFatalException: public std::runtime_error
 {
 public:
@@ -27,35 +21,52 @@ public:
 	XMLConfParserFatalException(const std::stringstream &message) : std::runtime_error(message.str()){};
 };
 
+
+/**
+ * Class for reading and parsing XML files.
+ */
 class XMLConfParser : public XMLConfDocument{
 public:
+	//! Constructor
 	XMLConfParser() : fReadSuccess(0) {};
+	//! Destructor
 	~XMLConfParser() {};
 
-	bool readFile(std::string fileName);
+	bool readFile(std::string fileName); //!< Read an XML file
+
+	/**
+	 * ReadSuccess is a counter that is incremented for every successful
+	 * getValue() or pathExists().\n
+	 * A getValue is successful if the requested node exists and the contained
+	 * value can be successfully read and transformed into the requested type.\n
+	 * A pathExists is successful if the path is found in the XML.
+	 * @return Number of ReadSuccess
+	 */
+	//! Get number of ReadSuccess
 	int  getReadSuccess() { return fReadSuccess; };
+	//! Reset number of ReadSuccess
 	void resetReadSuccess() { fReadSuccess=0; };
 
-	bool getValue(std::string path, int &ref);
-	bool getValue(std::string path, unsigned int &ref);
-	bool getValue(std::string path, double &ref);
-	bool getValue(std::string path, char *ref);
-	bool getValue(std::string path, std::string &ref);
+	bool getValue(std::string path, int &ref); //!< Get a value as int
+	bool getValue(std::string path, unsigned int &ref); //!< Get a value as unsigned int
+	bool getValue(std::string path, double &ref); //!< Get a value as double
+	bool getValue(std::string path, char *ref); //!< Get a value as c-string (do not require conversion)
+	bool getValue(std::string path, std::string &ref); //!< Get a value as std::string (do not require conversion)
 
-	bool pathExists(std::string path);
+	bool pathExists(std::string path); //!< Does the given path exists in the XML file
 
-	void startCheckAdditional();
-	void addCheckElement(std::string path);
-	void addListDiffElement(std::string path);
-	std::string getFirstDiff();
-	std::string getNextDiff();
-	void printAdditional();
+	void startCheckAdditional(); //!< Initialise the check of additional tags.
+	void addCheckElement(std::string path); //!< Add an element to the list of provided elements for the check of additional tags
+	void addListDiffElement(std::string path); //!< Add an element to the list of modified elements
+	std::string getFirstDiff(); //!< Return the first element in the list of modified elements
+	std::string getNextDiff(); //!< Return the next element in the list of modified elements
+	void printAdditional(); //!< Print the additional tags
 private:
-	void walkTreeCompare(std::string prefix, xmlNodePtr node);
+	void walkTreeCompare(std::string prefix, xmlNodePtr node); //!< Recursively walk through the XML tree.
 
-	int fReadSuccess;
-	std::unordered_set<std::string> fListAdditional;
-	std::vector<std::string> fListDiff;
-	std::vector<std::string>::iterator fListDiffIterator;
+	int fReadSuccess; //!< Counter for the number of successful reads
+	std::unordered_set<std::string> fListAdditional; //!< List containing the additional tags
+	std::vector<std::string> fListDiff; //!< List containing the modified elements
+	std::vector<std::string>::iterator fListDiffIterator; //!< Iterator through the list containing the modified elements
 };
 #endif /* XMLCONFPARSER_H_ */

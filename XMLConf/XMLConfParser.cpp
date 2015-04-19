@@ -7,11 +7,17 @@
 
 #include "XMLConfParser.h"
 #include <iostream>
+#include <string>
 #include <cstring>
 
+/**
+ *
+ * @param fileName Full path to the XML file to be read
+ * @return true if the file could be read and parsed. Else false.
+ * @todo Print the error message in case of malformated XML
+ */
 bool XMLConfParser::readFile(std::string fileName){
 	if(fDoc != NULL) closeFile();
-
 	fDoc = xmlParseFile(fileName.data());
 
 	if (fDoc == NULL ) {
@@ -28,6 +34,14 @@ bool XMLConfParser::readFile(std::string fileName){
 	return true;
 }
 
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @warning Fill the error stack
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found and the value can be transformed into int). Else false.
+ */
 bool XMLConfParser::getValue(std::string path, int& ref) {
 	xmlNodePtr n = findPathNode(path);
 	if(n){
@@ -48,6 +62,14 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
 	return false;
 }
 
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @warning Fill the error stack
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found and the value can be transformed into unsigned int). Else false.
+ */
 bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 	xmlNodePtr n = findPathNode(path);
 	if(n){
@@ -68,6 +90,14 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 	return false;
 }
 
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @warning Fill the error stack
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found and the value can be transformed into double). Else false.
+ */
 bool XMLConfParser::getValue(std::string path, double& ref) {
 	xmlNodePtr n = findPathNode(path);
 	if(n){
@@ -88,6 +118,13 @@ bool XMLConfParser::getValue(std::string path, double& ref) {
 	return false;
 }
 
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found). Else false.
+ */
 bool XMLConfParser::getValue(std::string path, std::string& ref) {
 	xmlNodePtr n = findPathNode(path);
 	if(n){
@@ -99,6 +136,13 @@ bool XMLConfParser::getValue(std::string path, std::string& ref) {
 	return false;
 }
 
+/**
+ * Fill the variable passed by reference with the value found at the specified path in the XML.
+ * If the path does not exist in the XML, the variable is untouched.
+ * @param path Path to retrieve. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @param ref Variable to fill the the value found at path.
+ * @return true in case of success (path is found). Else false.
+ */
 bool XMLConfParser::getValue(std::string path, char *ref) {
 	xmlNodePtr n = findPathNode(path);
 	if(n){
@@ -110,6 +154,11 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
 	return false;
 }
 
+/**
+ *
+ * @param path Path whose existence is checked. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ * @return true if the path is found in the XML, else false.
+ */
 bool XMLConfParser::pathExists(std::string path) {
 	xmlNodePtr n = findPathNode(path);
 	addCheckElement(path);
@@ -121,6 +170,10 @@ bool XMLConfParser::pathExists(std::string path) {
 	return false;
 }
 
+/**
+ * The check for additional tags prints a list of tags present in the XML file
+ * but not present in the list of provided elements.
+ */
 void XMLConfParser::startCheckAdditional() {
 	xmlNodePtr root = getRoot();
 
@@ -129,24 +182,39 @@ void XMLConfParser::startCheckAdditional() {
 	}
 }
 
+/**
+ *
+ * @return Path of the first element in the list of modified elements. Empty string if the list is empty.
+ */
 std::string XMLConfParser::getFirstDiff() {
 	fListDiffIterator = fListDiff.begin();
 	if(fListDiffIterator!= fListDiff.end()) return *fListDiffIterator;
 	return "";
 }
 
+/**
+ *
+ * @return Path of the next element in the list of modified elements. Empty string if the iteration through the list is over.
+ */
 std::string XMLConfParser::getNextDiff() {
 	fListDiffIterator++;
 	if(fListDiffIterator!= fListDiff.end()) return *fListDiffIterator;
 	return "";
 }
 
+/**
+ * Recursively find all the paths found in the XML tree and add them in the list of modified elements.
+ * @param prefix Current prefix for the path
+ * @param node Pointer to a node
+ */
 void XMLConfParser::walkTreeCompare(std::string prefix, xmlNodePtr node) {
 	xmlNodePtr n = node->children;
 
 	std::string path;
 	if(prefix=="") path = (const char*)node->name;
 	else path = prefix + "." + std::string((const char*)node->name);
+	int arrIndex = isArrayNode(node);
+	if(arrIndex>=0) path = path + "[" + std::to_string(arrIndex) + "]";
 
 	if(getNSiblings(n)==1){ // This node has only one child. Can only be a text
 		fListAdditional.insert(path);
@@ -158,6 +226,10 @@ void XMLConfParser::walkTreeCompare(std::string prefix, xmlNodePtr node) {
 	}
 }
 
+/**
+ *
+ * @param path Path to add. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ */
 void XMLConfParser::addCheckElement(std::string path) {
 	fListAdditional.erase(path);
 }
@@ -168,6 +240,10 @@ void XMLConfParser::printAdditional() {
 	}
 }
 
+/**
+ *
+ * @param path Path to add. The path "a.b.c" corresponds to the xml structure \<a\>\<b\>\<c\>1\</c\>\</b\>\</a\>
+ */
 void XMLConfParser::addListDiffElement(std::string path) {
 	fListDiff.push_back(path);
 }

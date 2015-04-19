@@ -471,7 +471,7 @@ SORT_MEMBER_DOCS = YES
 # by member name. If set to NO (the default) the members will appear in
 # declaration order.
 
-SORT_BRIEF_DOCS = NO
+SORT_BRIEF_DOCS = YES
 
 # If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen
 # will sort the (brief and detailed) documentation of class members so that
@@ -629,7 +629,7 @@ WARN_IF_DOC_ERROR = YES
 # wrong or incomplete parameter documentation, but not about the absence of
 # documentation.
 
-WARN_NO_PARAMDOC = NO
+WARN_NO_PARAMDOC = YES
 
 # The WARN_FORMAT tag determines the format of the warning messages that
 # doxygen can produce. The string should contain the $file, $line, and $text
@@ -655,7 +655,7 @@ WARN_LOGFILE =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT = XMLConf . Example/main_proxy.cc Example/main_parser.cc Example/DocGen/parser_list_pe.dox Example/main_writer.cc 
+INPUT = XMLConf . Example/main_proxy.cc Example/main_parser.cc Example/DocGen/parser_list_pe.dox Example/main_writer.cc
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -1216,7 +1216,7 @@ SERVER_BASED_SEARCH = NO
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will
 # generate Latex output.
 
-GENERATE_LATEX = NO
+GENERATE_LATEX = YES
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put.
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be

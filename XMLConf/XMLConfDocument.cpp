@@ -12,6 +12,12 @@
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 
+/**
+ *
+ * @param s String to tokenize
+ * @param separator List of separators
+ * @return vector of string containing the tokens
+ */
 std::vector<std::string> tokenize(std::string s, char const *separator){
     boost::char_separator<char> sep(separator);
     boost::tokenizer< boost::char_separator<char> > tokens(s, sep);
@@ -22,6 +28,12 @@ std::vector<std::string> tokenize(std::string s, char const *separator){
     return ret;
 }
 
+/**
+ *
+ * @param nodeName Searched child name(tag)
+ * @param node Pointer to a node
+ * @return If found, pointer to the node. Else NULL pointer.
+ */
 xmlNodePtr XMLConfDocument::findChildNode(std::string nodeName, xmlNodePtr node){
 	node = node->xmlChildrenNode;
 	while (node != NULL) {
@@ -31,6 +43,12 @@ xmlNodePtr XMLConfDocument::findChildNode(std::string nodeName, xmlNodePtr node)
 	return NULL;
 }
 
+/**
+ *
+ * @param nodeName Searched sibling name(tag)
+ * @param node Pointer to a node
+ * @return If found, pointer to the node. Else NULL pointer.
+ */
 xmlNodePtr XMLConfDocument::findNextSiblingNode(std::string nodeName, xmlNodePtr node){
 	node = node->next;
 	while (node != NULL) {
@@ -40,6 +58,10 @@ xmlNodePtr XMLConfDocument::findNextSiblingNode(std::string nodeName, xmlNodePtr
 	return NULL;
 }
 
+/**
+ *
+ * @param node Pointer to a node
+ */
 void XMLConfDocument::printNodeValue(xmlNodePtr node){
 	if(node) std::cout << node->name << ": " << getNodeString(node) << std::endl;
 }
@@ -51,6 +73,11 @@ void XMLConfDocument::closeFile() {
 	}
 }
 
+/**
+ *
+ * @param node Pointer to a node
+ * @return String representation of the node value if found. Else empty string.
+ */
 std::string XMLConfDocument::getNodeString(xmlNodePtr node){
 	xmlChar *key;
 	key = xmlNodeListGetString(fDoc, node->xmlChildrenNode, 1);
@@ -61,6 +88,11 @@ std::string XMLConfDocument::getNodeString(xmlNodePtr node){
 	return sRet;
 }
 
+/**
+ * @warning Fills the error stack
+ * @param path Path a.b.c corresponds to the XML structure <a><b><c>1</c></b></a>
+ * @return If found, pointer to the node. Else NULL pointer.
+ */
 xmlNodePtr XMLConfDocument::findPathNode(std::string path) {
 	std::vector<std::string> list = tokenizePath(path);
 
@@ -80,6 +112,10 @@ xmlNodePtr XMLConfDocument::findPathNode(std::string path) {
 	return NULL;
 }
 
+/**
+ *
+ * @param node Pointer to a node
+ */
 void XMLConfDocument::printNode(xmlNodePtr node) {
 	std::cout << node->name << std::endl;
 	node = node->xmlChildrenNode;
@@ -89,19 +125,34 @@ void XMLConfDocument::printNode(xmlNodePtr node) {
 	}
 }
 
+/**
+ *
+ * @param nodeName Searched child array name(tag)
+ * @param index Searched array index
+ * @param node Pointer to a node
+ * @return If found, pointer to the node. Else NULL pointer.
+ */
 xmlNodePtr XMLConfDocument::findArrayNode(std::string nodeName, int index,
 		xmlNodePtr node) {
-	xmlNodePtr cur = findChildNode(nodeName, node);
+	xmlNodePtr cur;
 
-	while(cur){
+	for(cur = findChildNode(nodeName, node); cur; cur = findNextSiblingNode(nodeName, cur)){
 		std::string id = readAttribute("id", cur);
-		if(!id.compare("")) return NULL;
-		if(atoi(id.data())==index) return cur;
-		cur = findNextSiblingNode(nodeName, cur);
+		char* endptr;
+		int i_id = strtol(id.data(), &endptr, 0);
+		//if(!id.compare("")) return NULL;
+		if(!id.compare("") || *endptr) continue;
+		if(i_id==index) return cur;
+
 	}
 	return NULL;
 }
 
+/**
+ *
+ * @param name name to check. my_name[12] corresponds to an array.
+ * @return Index of the array or -1 if not an array.
+ */
 int XMLConfDocument::isArrayNode(std::string &name){
 	std::vector<std::string> t = tokenize(name, "[]");
 
@@ -112,6 +163,12 @@ int XMLConfDocument::isArrayNode(std::string &name){
 	return -1;
 }
 
+/**
+ * @warning Fills the error stack
+ * @param path Vectorised path a.b.c is vectorised as {a,b,c} and corresponds to the XML structure <a><b><c>1</c></b></a>
+ * @param cur Pointer to a node
+ * @return If found, pointer to the node. Else NULL pointer.
+ */
 xmlNodePtr XMLConfDocument::findPathNode(std::vector<std::string> path, xmlNodePtr cur) {
 	int id = isArrayNode(path.front());
 	if(id==-1) cur = findChildNode(path.front(), cur);
@@ -130,10 +187,18 @@ xmlNodePtr XMLConfDocument::findPathNode(std::vector<std::string> path, xmlNodeP
 	return findPathNode(path, cur);
 }
 
+/**
+ *
+ * @param attributeName Name of the attribute
+ * @param node Pointer to a node
+ * @return String representation of the attribute if found, or empty string
+ */
 std::string XMLConfDocument::readAttribute(std::string attributeName,
 		xmlNodePtr node) {
 	xmlChar *attr = xmlGetProp(node, (const xmlChar*)attributeName.data());
-	std::string sattr(reinterpret_cast<const char*>(attr));
+	std::string sattr;
+	if(attr!=NULL) sattr = reinterpret_cast<const char*>(attr);
+	else sattr = "";
 	xmlFree(attr);
 	return sattr;
 }
@@ -142,6 +207,10 @@ void XMLErrorStack::printStack() {
 	std::cout << stringStack() << std::endl;
 }
 
+/**
+ *
+ * @return Single string containing all the error stack.
+ */
 std::string XMLErrorStack::stringStack() {
 	std::stringstream ss;
 	for(auto el : fStack){
@@ -150,6 +219,10 @@ std::string XMLErrorStack::stringStack() {
 	return ss.str();
 }
 
+/**
+ * @param node Pointer to a node
+ * @return Number of siblings of the provided node. If node is not NULL, the returned value is greater than 0.
+ */
 int XMLConfDocument::getNSiblings(xmlNodePtr node) {
 	int i=0;
 	while(node){
@@ -158,3 +231,15 @@ int XMLConfDocument::getNSiblings(xmlNodePtr node) {
 	}
 	return i;
 }
+
+/**
+ * \<my_tag id="3"\>\</my_tag\> is an array node of index 3.
+ * @param node A pointer to a node. A node with an id attribute compatible with an integer
+ * @return Index of the array or -1 if not an array.
+ */
+int XMLConfDocument::isArrayNode(xmlNodePtr node) {
+	std::string id = readAttribute("id", node);
+	if(!id.compare("")) return -1;
+	return atoi(id.data());
+}
+
