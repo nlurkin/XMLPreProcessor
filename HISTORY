@@ -1,0 +1,13 @@
+Version 1.0.0 - 19/04/2015
+	* Organise file structure
+	* Use an error stack to be able to retrieve the error when convenient
+	* Clean code
+	* Implement tests API
+	* Write documentation and examples
+	* Works on arrays and arrays of xmlchar
+	* Add float support
+	* XML parsing error handling
+	* Fix some bugs 
+
+Version 0.1.0 - 16/04/2015
+	* First working version for demonstration.

@@ -11,6 +11,8 @@
 #include <string>
 #include <sstream>
 
+#include "XMLConfVersion.h"
+
 #ifndef XMLCONFDOCUMENT_H_
 #define XMLCONFDOCUMENT_H_
 
