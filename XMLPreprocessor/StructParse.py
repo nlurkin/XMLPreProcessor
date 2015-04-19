@@ -286,7 +286,7 @@ def writeStructTest(mainStruct, sDict, tdefDict, prefixString, prefixPointer, in
             else:
                 for i in range(0,arrSize):                              # call the get function for each element in the array
                     tester += '\tif(!gParser.pathExists("' + stringPath + \
-                    '_' + str(i) + '_")) std::cout << "'+ stringPath + \
+                    '[' + str(i) + ']")) std::cout << "'+ stringPath + \
                     '[' + str(i) + '] was not found in XML file" << std::endl;\n'
         else:                                                           # Unkown or non-basic type (struct)
             if "struct" in vType:                                       # we don't care about the struct keyword
@@ -365,7 +365,8 @@ def writeStructStartCompare(mainStruct, sDict, tdefDict, prefixString, prefixPoi
             else:
                 for i in range(0,arrSize):                              # call the get function for each element in the array
                     tester += '\telse if(diff.compare("' + stringPath + \
-                    '_' + str(i) + '_")==0) return &(' + pointerPath + ');\n'
+                    '[' + str(i) + ']")==0) return &(' + pointerPath + \
+                    '[' + str(i) + ']);\n'
         else:                                                           # Unkown or non-basic type (struct)
             if "struct" in vType:                                       # we don't care about the struct keyword
                 vType = vType.replace("struct", "").strip()
