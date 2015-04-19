@@ -21,7 +21,14 @@ bool XMLConfParser::readFile(std::string fileName){
 	fDoc = xmlParseFile(fileName.data());
 
 	if (fDoc == NULL ) {
-		throw XMLConfParserFatalException("Document not parsed successfully.");
+		std::stringstream ss;
+		xmlErrorPtr errPtr = xmlGetLastError();
+
+		ss << "Document not parsed successfully." << std::endl;
+		ss << "File: " << errPtr->file << " at (l:";
+		ss << errPtr->line << ", c:" << errPtr->int2;
+		ss << "): " << errPtr->message << std::endl;
+		throw XMLConfParserFatalException(ss);
 		return false;
 	}
 
@@ -103,7 +110,7 @@ bool XMLConfParser::getValue(std::string path, float& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
-		double val = strtof(s.data(), &endptr, 0);
+		double val = strtof(s.data(), &endptr);
 		if(!*endptr){
 			ref = val;
 			fReadSuccess++;

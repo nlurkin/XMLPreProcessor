@@ -89,6 +89,14 @@ public:
 	//! Return the error stack.
 	XMLErrorStack getLastError() { return fErrorStack; };
 
+	/**
+	 *
+	 * @return true if XML document is initialised and operations
+	 * are allowed, else false.
+	 */
+	//! Is the XML document initialised.
+	bool isDocumentInitialised() { return fDoc!=NULL; };
+
 protected:
 	xmlDocPtr fDoc; //!< Pointer to the XML document
 	xmlNodePtr fRoot; //!< Pointer to the root node of the document

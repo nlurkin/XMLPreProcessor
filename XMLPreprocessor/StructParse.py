@@ -10,32 +10,39 @@ fileContent = """#include "{FileBase}Proxy.h"
 #include "XMLConfParser.h"
 #include <iostream>
 
-XMLConfParser gParser;
+static XMLConfParser gParser;
+static std::string gLastFatalError;
 
-int xml_read_file(const char* fileName){{
+const char* xml_getLastFatalError_{struct}(){{ return gLastFatalError.c_str(); }};
+
+int xml_read_file_{struct}(const char* fileName){{
     try {{
     gParser.readFile(fileName);
     }}
     catch (std::runtime_error& ex) {{
         std::cout << "Fatal error: " << ex.what() << std::endl;
+        gLastFatalError = ex.what();
         return -1;
     }}
     return 0;
 }}
 
 int xml_apply_{struct}({structtype}{struct} *ptr){{
+    if(!gParser.isDocumentInitialised()) return -1;
     gParser.resetReadSuccess();
     try {{
 {setters}
     }}
     catch (std::runtime_error& ex) {{
         std::cout << "Fatal error: " << ex.what() << std::endl;
+        gLastFatalError = ex.what();
         return -1;
     }}
     return gParser.getReadSuccess();
 }}
 
 int xml_test_{struct}(){{
+    if(!gParser.isDocumentInitialised()) return -1;
     gParser.resetReadSuccess();
     gParser.startCheckAdditional();
     try {{
@@ -43,6 +50,7 @@ int xml_test_{struct}(){{
     }}
     catch (std::runtime_error& ex) {{
         std::cout << "Fatal error: " << ex.what() << std::endl;
+        gLastFatalError = ex.what();
         return -1;
     }}
     std::cout << "XML tags without struct correspondance: " << std::endl;
@@ -50,19 +58,22 @@ int xml_test_{struct}(){{
     return gParser.getReadSuccess();
 }}
 
-void* xml_start_compare_{struct}({structtype}{struct} *ptr){{
-    std::string diff = gParser.getFirstDiff();
-
-    return xml_compare_get_address_from_string(ptr, diff);
-}}
-
 void* xml_compare_get_address_from_string({structtype}{struct} *ptr, std::string diff){{
+    if(!gParser.isDocumentInitialised()) return NULL;
     if(diff.compare("")==0) return NULL;
 {comparers}
     else return NULL;
 }}
 
+void* xml_start_compare_{struct}({structtype}{struct} *ptr){{
+    if(!gParser.isDocumentInitialised()) return NULL;
+    std::string diff = gParser.getFirstDiff();
+
+    return xml_compare_get_address_from_string(ptr, diff);
+}}
+
 void* xml_next_compare_{struct}({structtype}{struct} *ptr){{
+    if(!gParser.isDocumentInitialised()) return NULL;
     std::string diff = gParser.getNextDiff();
 
     return xml_compare_get_address_from_string(ptr, diff);
@@ -79,6 +90,7 @@ int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName){{
     }}
     catch (std::runtime_error& ex) {{
         std::cout << "Fatal error: " << ex.what() << std::endl;
+        gLastFatalError = ex.what();
         return -1;
     }}
     return 0;
@@ -94,15 +106,14 @@ fileHeader = """#include "{FileBase}.h"
 #include <string>
 extern "C" {{
 #endif
-int xml_read_file(const char* fileName);
+int xml_read_file_{struct}(const char* fileName);
 int xml_apply_{struct}({structtype}{struct} *ptr);
 int xml_test_{struct}();
 void* xml_start_compare_{struct}({structtype}{struct} *ptr);
 void* xml_next_compare_{struct}({structtype}{struct} *ptr);
 int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName);
-
+const char* xml_getLastFatalError_{struct}();
 #ifdef __cplusplus
-void* xml_compare_get_address_from_string({structtype}{struct} *ptr, std::string diff);
 }}
 #endif
 
