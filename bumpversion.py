@@ -38,7 +38,7 @@ if __name__=='__main__':
         if data:
             for i, line in enumerate(data):
                 if "__version__" in line:
-                    data[i] = '__version__ = "%s.%s.%s\n' % tuple(currVersion)
+                    data[i] = '__version__ = "%s.%s.%s"\n' % tuple(currVersion)
             with open("xmlpp.py", 'w') as f:
                 f.writelines(data)
             

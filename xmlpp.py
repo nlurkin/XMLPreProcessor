@@ -13,7 +13,7 @@ from subprocess import call
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from __builtin__ import bool
 
-__version__ = "1.0.0
+__version__ = "1.0.0"
 __descr__ = ("""
 Script for XML proxy
 """)
