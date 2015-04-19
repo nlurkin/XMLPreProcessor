@@ -1,9 +1,26 @@
+This library is intended to be used to create and load XML files to a C structure.
+It is a 2-part software:
+ - The first part is a C++ library that is used to parse and retrieve values from XML file, and create
+   XML files from a list of specifications.
+ - The second part is a python script that generates a C code to automatically create XML from a C structure, 
+   fill the C structure from an XML file and compare an XML file with the C structure to find the common and
+   and different items.
 
+The xmlpp.py python script takes as input a header file describing C structures and generates the code for the 
+automatic structure filling and XML creation. If more than one structure is present in the header
+file, you must specify which one is the top one. 
+Usage:
+    xmlpp.py {headerFile.h} --struct {topStructure}
+This will produce besides your {headerFile.h} two C++ files {headerFileProxy.h} and {headerFileProxy.cc} 
+that you should include in your compilation.
 
-apply_{structname} :
-	return: Number of elements successfully parsed from XML
-			-1 in case of fatal error (file cannot be read)
+The following functions are implemented in these 2 files:
+   int xml_read_file_exampleStruct(const char* fileName);
+   int xml_apply_exampleStruct(exampleStruct *ptr);
+   int xml_test_exampleStruct();
+   void* xml_start_compare_exampleStruct(exampleStruct *ptr);
+   void* xml_next_compare_exampleStruct(exampleStruct *ptr);
+   int xml_create_exampleStruct(exampleStruct *ptr, const char* fileName);
+   const char* xml_getLastFatalError_exampleStruct();
 
-create_{structname} : 
-	return: Number of bytes written in case of success
-			-1 in case of fatal error (unable to create and write file)
+Please refer to the full documentation at http://nlurkin.web.cern.ch/nlurkin/XMLPreProcessor/
