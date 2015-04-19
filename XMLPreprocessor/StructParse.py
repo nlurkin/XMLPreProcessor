@@ -35,7 +35,7 @@ int xml_apply_{struct}({structtype}{struct} *ptr){{
     return gParser.getReadSuccess();
 }}
 
-int xml_test_{struct}({structtype}{struct} *ptr){{
+int xml_test_{struct}(){{
     gParser.resetReadSuccess();
     gParser.startCheckAdditional();
     try {{
@@ -96,7 +96,7 @@ extern "C" {{
 #endif
 int xml_read_file(const char* fileName);
 int xml_apply_{struct}({structtype}{struct} *ptr);
-int xml_test_{struct}({structtype}{struct} *ptr);
+int xml_test_{struct}();
 void* xml_start_compare_{struct}({structtype}{struct} *ptr);
 void* xml_next_compare_{struct}({structtype}{struct} *ptr);
 int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName);
@@ -364,7 +364,7 @@ def writeStructStartCompare(mainStruct, sDict, tdefDict, prefixString, prefixPoi
                         '")==0) return &(' + pointerPath + ');\n'
             else:
                 for i in range(0,arrSize):                              # call the get function for each element in the array
-                    tester += '\telse if(!diff.compare("' + stringPath + \
+                    tester += '\telse if(diff.compare("' + stringPath + \
                     '_' + str(i) + '_")==0) return &(' + pointerPath + ');\n'
         else:                                                           # Unkown or non-basic type (struct)
             if "struct" in vType:                                       # we don't care about the struct keyword
