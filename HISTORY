@@ -1,3 +1,7 @@
+Version 1.1.0 - 23/04/2015
+	* Remove c++11 (auto and use set instead of unordered_set)
+	* Remove BOOST_FOREACH
+
 Version 1.0.0 - 19/04/2015
 	* Organise file structure
 	* Use an error stack to be able to retrieve the error when convenient
