@@ -13,6 +13,11 @@
  the additional features provided by the C++ API, reading the sections \ref C_Interface and \ref xmlpp is probably 
  sufficient. 
  
+ \section Requirements requirements
+ This library requires the following dependencies to be installed:
+  - libxml2 and libxlm2-devel
+  - boost-devel
+ 
  \section cpplib C++ Library
  This C++ library is a XML parser based on libxml2. 
  As an example, the following structure will be used

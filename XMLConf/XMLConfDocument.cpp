@@ -9,7 +9,6 @@
 
 #include <iostream>
 
-#include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 
 /**
@@ -21,9 +20,11 @@
 std::vector<std::string> tokenize(std::string s, char const *separator){
     boost::char_separator<char> sep(separator);
     boost::tokenizer< boost::char_separator<char> > tokens(s, sep);
+    boost::tokenizer< boost::char_separator<char> >::iterator it;
+
     std::vector<std::string> ret;
-    BOOST_FOREACH (const std::string& t, tokens) {
-        ret.push_back(t);
+    for(it = tokens.begin(); it != tokens.end(); it++){
+        ret.push_back(*it);
     }
     return ret;
 }
