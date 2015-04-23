@@ -8,7 +8,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
-#include <unordered_set>
+#include <set>
 #include "XMLConfDocument.h"
 
 #ifndef XMLCONFPARSER_H_
@@ -66,7 +66,7 @@ private:
 	void walkTreeCompare(std::string prefix, xmlNodePtr node); //!< Recursively walk through the XML tree.
 
 	int fReadSuccess; //!< Counter for the number of successful reads
-	std::unordered_set<std::string> fListAdditional; //!< List containing the additional tags
+	std::set<std::string> fListAdditional; //!< List containing the additional tags
 	std::vector<std::string> fListDiff; //!< List containing the modified elements
 	std::vector<std::string>::iterator fListDiffIterator; //!< Iterator through the list containing the modified elements
 };

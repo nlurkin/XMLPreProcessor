@@ -214,8 +214,10 @@ void XMLErrorStack::printStack() {
  */
 std::string XMLErrorStack::stringStack() {
 	std::stringstream ss;
-	for(auto el : fStack){
-		ss << el;
+	std::vector<std::string>::iterator it;
+
+	for(it=fStack.begin(); it!=fStack.end(); it++){
+		ss << *it;
 	}
 	return ss.str();
 }

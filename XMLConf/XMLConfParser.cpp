@@ -248,7 +248,9 @@ void XMLConfParser::walkTreeCompare(std::string prefix, xmlNodePtr node) {
 	if(prefix=="") path = (const char*)node->name;
 	else path = prefix + "." + std::string((const char*)node->name);
 	int arrIndex = isArrayNode(node);
-	if(arrIndex>=0) path = path + "[" + std::to_string(arrIndex) + "]";
+	std::stringstream ss;
+	ss << arrIndex;
+	if(arrIndex>=0) path = path + "[" + ss.str() + "]";
 
 	if(getNSiblings(n)==1){ // This node has only one child. Can only be a text
 		fListAdditional.insert(path);
@@ -269,8 +271,10 @@ void XMLConfParser::addCheckElement(std::string path) {
 }
 
 void XMLConfParser::printAdditional() {
-	for(auto it : fListAdditional){
-		std::cout << it << std::endl;
+	std::set<std::string>::iterator it;
+
+	for(it=fListAdditional.begin(); it!=fListAdditional.end(); it++){
+		std::cout << *it << std::endl;
 	}
 }
 

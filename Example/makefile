@@ -1,7 +1,7 @@
 INC = -I/usr/include/libxml2 -I../XMLConf
 LIBDIR = -L../XMLConf
 LIB = -lxml2 -lxmlpreprocessor
-CFLAGS	= -O -Wall -fPIC -g3 --std=c++11
+CFLAGS	= -O -Wall -fPIC -g3
 
 
 all: outputStruct.xml
