@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<exampleStruct>
+  <version>0x2A</version>
+  <name>my_struct</name>
+  <my_array id="0">1</my_array>
+  <my_array id="1">2</my_array>
+  <my_array id="2">3</my_array>
+  <my_array id="3">4</my_array>
+  <my_array id="4">5</my_array>
+  <my_substruct>
+    <my_integer>25</my_integer>
+    <my_double>36.4</my_double>
+  </my_substruct>
+</exampleStruct>
