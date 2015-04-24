@@ -5,7 +5,7 @@ Created on 30 Mar 2015
 '''
 import re
 
-fileContent = """#include "{FileBase}Proxy.h"
+fileContent = """#include "%(FileBase)sProxy.h"
 #include "XMLConfWriter.h"
 #include "XMLConfParser.h"
 #include <iostream>
@@ -13,115 +13,115 @@ fileContent = """#include "{FileBase}Proxy.h"
 static XMLConfParser gParser;
 static std::string gLastFatalError;
 
-const char* xml_getLastFatalError_{struct}(){{ return gLastFatalError.c_str(); }};
+const char* xml_getLastFatalError_%(struct)s(){ return gLastFatalError.c_str(); };
 
-int xml_read_file_{struct}(const char* fileName){{
-    try {{
+int xml_read_file_%(struct)s(const char* fileName){
+    try {
     gParser.readFile(fileName);
-    }}
-    catch (std::runtime_error& ex) {{
+    }
+    catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
         return -1;
-    }}
+    }
     return 0;
-}}
+}
 
-int xml_apply_{struct}({structtype}{struct} *ptr){{
+int xml_apply_%(struct)s(%(structtype)s%(struct)s *ptr){
     if(!gParser.isDocumentInitialised()) return -1;
     gParser.resetReadSuccess();
-    try {{
-{setters}
-    }}
-    catch (std::runtime_error& ex) {{
+    try {
+%(setters)s
+    }
+    catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
         return -1;
-    }}
+    }
     return gParser.getReadSuccess();
-}}
+}
 
-int xml_test_{struct}(){{
+int xml_test_%(struct)s(){
     if(!gParser.isDocumentInitialised()) return -1;
     gParser.resetReadSuccess();
     gParser.startCheckAdditional();
-    try {{
-{testers}
-    }}
-    catch (std::runtime_error& ex) {{
+    try {
+%(testers)s
+    }
+    catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
         return -1;
-    }}
+    }
     std::cout << "XML tags without struct correspondance: " << std::endl;
     gParser.printAdditional();
     return gParser.getReadSuccess();
-}}
+}
 
-void* xml_compare_get_address_from_string({structtype}{struct} *ptr, std::string diff){{
+void* xml_compare_get_address_from_string(%(structtype)s%(struct)s *ptr, std::string diff){
     if(!gParser.isDocumentInitialised()) return NULL;
     if(diff.compare("")==0) return NULL;
-{comparers}
+%(comparers)s
     else return NULL;
-}}
+}
 
-void* xml_start_compare_{struct}({structtype}{struct} *ptr){{
+void* xml_start_compare_%(struct)s(%(structtype)s%(struct)s *ptr){
     if(!gParser.isDocumentInitialised()) return NULL;
     std::string diff = gParser.getFirstDiff();
 
     return xml_compare_get_address_from_string(ptr, diff);
-}}
+}
 
-void* xml_next_compare_{struct}({structtype}{struct} *ptr){{
+void* xml_next_compare_%(struct)s(%(structtype)s%(struct)s *ptr){
     if(!gParser.isDocumentInitialised()) return NULL;
     std::string diff = gParser.getNextDiff();
 
     return xml_compare_get_address_from_string(ptr, diff);
-}}
+}
 
-int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName){{
+int xml_create_%(struct)s(%(structtype)s%(struct)s *ptr, const char* fileName){
     XMLConfWriter writer;
-    try {{
-    writer.createDocument("{struct}");
+    try {
+    writer.createDocument("%(struct)s");
     
-{creators}
+%(creators)s
     return writer.writeDocument(fileName);
     
-    }}
-    catch (std::runtime_error& ex) {{
+    }
+    catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
         return -1;
-    }}
+    }
     return 0;
-}}
+}
 """
 
-fileHeader = """#include "{FileBase}.h"
+fileHeader = """#include "%(FileBase)s.h"
 
-#ifndef {capFileBase}PROXY_H_
-#define {capFileBase}PROXY_H_
+#ifndef %(capFileBase)sPROXY_H_
+#define %(capFileBase)sPROXY_H_
 
 #ifdef __cplusplus
 #include <string>
-extern "C" {{
+extern "C" {
 #endif
-int xml_read_file_{struct}(const char* fileName);
-int xml_apply_{struct}({structtype}{struct} *ptr);
-int xml_test_{struct}();
-void* xml_start_compare_{struct}({structtype}{struct} *ptr);
-void* xml_next_compare_{struct}({structtype}{struct} *ptr);
-int xml_create_{struct}({structtype}{struct} *ptr, const char* fileName);
-const char* xml_getLastFatalError_{struct}();
+int xml_read_file_%(struct)s(const char* fileName);
+int xml_apply_%(struct)s(%(structtype)s%(struct)s *ptr);
+int xml_test_%(struct)s();
+void* xml_start_compare_%(struct)s(%(structtype)s%(struct)s *ptr);
+void* xml_next_compare_%(struct)s(%(structtype)s%(struct)s *ptr);
+int xml_create_%(struct)s(%(structtype)s%(struct)s *ptr, const char* fileName);
+const char* xml_getLastFatalError_%(struct)s();
 #ifdef __cplusplus
-}}
+}
 #endif
 
-#endif /* {capFileBase}PROXY_H_ */
+#endif /* %(capFileBase)sPROXY_H_ */
 
 """
 
-class struct():
+class struct(object):
     def __init__(self):
         self.name = ""
         self.typedef = None
@@ -170,7 +170,8 @@ def parse(fileName):
     structArr = list()
     structLines = None
     inStruct = -1
-    with open(fileName) as fd:
+    fd = open(fileName)
+    try:
         for line in fd:
             if line.startswith('#'):                # Comment: skip line
                 continue
@@ -193,6 +194,8 @@ def parse(fileName):
                 inStruct -= 1
                 if inStruct == 0:
                     inStruct = -1
+    finally:
+        fd.close()
 
     if structLines:                                 # Include last struct in array of struct
         structArr.append(structLines)
@@ -217,21 +220,27 @@ def writeCFile(mainStruct, sDict, tdefDict, dirPath, baseName):
         structType = ""
     
     #Write source file
-    with open(dirPath +"/" + baseName +"Proxy.cc", "w") as fd:
-        fd.write(fileContent.format(structtype=structType,
-                            struct=structName,
-                            FileBase=baseName,
-                            setters=writeStructFields(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
-                            testers=writeStructTest(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
-                            creators=writeStructCreate(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
-                            comparers=writeStructStartCompare(mainStruct, sDict, tdefDict, structName+".", "ptr->")))
-    
+    fd = open(dirPath +"/" + baseName +"Proxy.cc", "w")
+    try:
+        fd.write(fileContent % {"structtype":structType,
+                            "struct":structName,
+                            "FileBase":baseName,
+                            "setters":writeStructFields(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            "testers":writeStructTest(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            "creators":writeStructCreate(mainStruct, sDict, tdefDict, structName+".", "ptr->"),
+                            "comparers":writeStructStartCompare(mainStruct, sDict, tdefDict, structName+".", "ptr->")})
+    finally:
+        fd.close()
+        
     #Write header file
-    with open(dirPath + "/" + baseName +"Proxy.h", "w") as fd:
-        fd.write(fileHeader.format(structtype=structType,
-                                   struct=structName, 
-                                   FileBase=baseName,
-                                   capFileBase=baseName.upper()))
+    fd = open(dirPath + "/" + baseName +"Proxy.h", "w")
+    try:
+        fd.write(fileHeader % {"structtype":structType,
+                                   "struct":structName, 
+                                   "FileBase":baseName,
+                                   "capFileBase":baseName.upper()})
+    finally:
+        fd.close()
 
 
 def writeStructFields(mainStruct, sDict, tdefDict, prefixString, prefixPointer, index=-1):

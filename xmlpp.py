@@ -28,11 +28,12 @@ def preProcessFile(filePath):
     fileName = os.path.basename(filePath)
     baseName = os.path.splitext(fileName)[0]
     dirName = os.path.dirname(filePath)
+    
     if not os.path.isabs(dirName):
-        dirName = dirName + os.getcwd()
+        dirName = os.getcwd() + "/" + dirName
         
         preProcessedFile = dirName + "/" + baseName + ".pre"
-        
+            
     #Run the C preprocessor on the header file and produce a preprocessed file in the same folder
     cmd = ["gcc", "-x", "c++", "-E", filePath, "-o", preProcessedFile, "-I"+os.path.dirname(__file__)+"/XMLConf", "-DXMLPREPROCESSOR"]
     print "C preprocessor command: " + " ".join(cmd)
