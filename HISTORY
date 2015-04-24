@@ -1,3 +1,7 @@
+Version 1.2.0 - 24/04/2015
+	* Fix some compilation warnings
+	* Revert to python2.4
+
 Version 1.1.0 - 23/04/2015
 	* Remove c++11 (auto and use set instead of unordered_set)
 	* Remove BOOST_FOREACH

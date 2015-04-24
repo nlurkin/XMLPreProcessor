@@ -8,6 +8,6 @@
 #ifndef XMLCONFVERSION_H_
 #define XMLCONFVERSION_H_
 
-#define XMLCONF_VERSION 1.1.0
+#define XMLCONF_VERSION 1.2.0
 
 #endif /* XMLCONFVERSION_H_ */
