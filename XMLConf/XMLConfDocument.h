@@ -23,7 +23,7 @@ std::vector<std::string> tokenize(std::string s, char const *separator); //!< To
  * @return vector of tokens
  */
 //! Tokenize a path (separator is .)
-inline std::vector<std::string> tokenizePath(std::string s) {return tokenize(s, ".");};
+inline std::vector<std::string> tokenizePath(std::string s) {return tokenize(s, ".");}
 
 /**
  * Class containing an error stack. This is used to allow printing the error whenever convenient
@@ -32,7 +32,7 @@ inline std::vector<std::string> tokenizePath(std::string s) {return tokenize(s, 
 class XMLErrorStack {
 public:
 	//! Constructor
-	XMLErrorStack() {};
+	XMLErrorStack() : fStack() {};
 	//! Destructor
 	virtual ~XMLErrorStack() {};
 
@@ -55,9 +55,14 @@ private:
 class XMLConfDocument {
 public:
 	//! Constructor
-	XMLConfDocument() : fDoc(NULL), fRoot(NULL){};
+	XMLConfDocument() : fDoc(NULL), fRoot(NULL), fErrorStack() {};
+	//! Copy Constructor
+	XMLConfDocument(XMLConfDocument & d) : fDoc(d.fDoc), fRoot(d.fRoot), fErrorStack() {};
 	//! Destructor
 	virtual ~XMLConfDocument() { closeFile(); };
+
+	//! Copy operator
+	XMLConfDocument& operator=(XMLConfDocument & d) {fDoc = d.fDoc; fRoot = d.fRoot; return *this;};
 
 	void closeFile(); //!< Close the current document. Free allocated memory.
 

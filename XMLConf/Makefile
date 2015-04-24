@@ -4,8 +4,8 @@ OBJ = $(addsuffix .o,$(SRC))
 INC = -I/usr/include/libxml2
 LIB = -lxml2
 
-#CFLAGS	 = -O -Wall -fPIC -g3 -std=c++0x -m32
-CFLAGS	 = -O -Wall -fPIC -g3
+#CFLAGS	 = -O -fPIC -g3 -Wall -Wextra -m32
+CFLAGS	 = -O -fPIC -g3 -Wall -Wextra
 SOFLAGS	 = -shared
 CC	 = g++
 CCC	 = gcc

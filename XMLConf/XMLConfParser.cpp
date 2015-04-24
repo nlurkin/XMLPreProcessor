@@ -53,7 +53,7 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
-		double val = strtol(s.data(), &endptr, 0);
+		int val = strtol(s.data(), &endptr, 0);
 		if(!*endptr){
 			ref = val;
 			fReadSuccess++;
@@ -81,7 +81,7 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
-		double val = strtol(s.data(), &endptr, 0);
+		int val = strtol(s.data(), &endptr, 0);
 		if(!*endptr){
 			ref = val;
 			fReadSuccess++;
