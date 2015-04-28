@@ -398,7 +398,7 @@ def writeStructStartCompare(mainStruct, sDict, tdefDict, prefixString, prefixPoi
                 else:
                     for i in range(0,arrSize):                          # Recurse for each element in the array
                         tester += writeStructStartCompare(sDict[vType], sDict, tdefDict, 
-                                                          stringPath+"_%i_." % i, 
+                                                          stringPath+"[%i]." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return tester
 
