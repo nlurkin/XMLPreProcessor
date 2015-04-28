@@ -319,7 +319,7 @@ def writeStructTest(mainStruct, sDict, tdefDict, prefixString, prefixPointer, in
                 else:
                     for i in range(0,arrSize):                          # Recurse for each element in the array
                         tester += writeStructTest(sDict[vType], sDict, tdefDict, 
-                                                          stringPath+"_%i_." % i, 
+                                                          stringPath+"[%i]." % i, 
                                                           pointerPath+"[%i]." % i, i)
     return tester
 
