@@ -1,3 +1,7 @@
+Version 1.2.1 - 29/04/2015
+    * Fix some path string syntax errors
+    * Prints none when no difference
+
 Version 1.2.0 - 24/04/2015
 	* Fix some compilation warnings
 	* Revert to python2.4
