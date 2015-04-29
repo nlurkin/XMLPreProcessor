@@ -273,8 +273,11 @@ void XMLConfParser::addCheckElement(std::string path) {
 void XMLConfParser::printAdditional() {
 	std::set<std::string>::iterator it;
 
-	for(it=fListAdditional.begin(); it!=fListAdditional.end(); it++){
-		std::cout << *it << std::endl;
+	if(fListAdditional.size()==0) std::cout << "None" << std::endl;
+	else{
+		for(it=fListAdditional.begin(); it!=fListAdditional.end(); it++){
+			std::cout << *it << std::endl;
+		}
 	}
 }
 
