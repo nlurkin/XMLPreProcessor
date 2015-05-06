@@ -144,9 +144,9 @@ class struct(object):
 
 def parseStruct(structLines):
     s = struct()
-    m = re.findall("(?:typedef )?struct (.*)\s*{(.*)}\s*(.*?)\s*;", "".join(structLines), 
-                   re.MULTILINE | re.DOTALL) # regular expression to find struct name and eventual typedef
-    
+    re_compiled = re.compile("(?:typedef )?struct (.*)\s*{(.*)}\s*(.*?)\s*;", re.MULTILINE | re.DOTALL)
+    m = re_compiled.findall("".join(structLines)) # regular expression to find struct name and eventual typedef
+        
     if m:                                   # set them if found
         s.name = m[0][0].strip(" \n")
         tdef = m[0][2].strip(" \n")

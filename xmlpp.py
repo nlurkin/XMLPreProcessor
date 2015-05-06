@@ -9,7 +9,6 @@ Created on 30 Mar 2015
 from XMLPreprocessor import StructParse 
 import sys
 import os
-from subprocess import call
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from __builtin__ import bool
 
@@ -18,7 +17,9 @@ __descr__ = ("""
 Script for XML proxy
 """)
 
-def preProcessFile(filePath):
+def preProcessFile(filePath, defines):
+    if defines is None:
+        defines = ""
     # Verify the file exist and is a file
     if not os.path.isfile(filePath):
         print "Error: " + filePath + " is not a file or cannot be found"
@@ -35,9 +36,9 @@ def preProcessFile(filePath):
         preProcessedFile = dirName + "/" + baseName + ".pre"
             
     #Run the C preprocessor on the header file and produce a preprocessed file in the same folder
-    cmd = ["gcc", "-x", "c++", "-E", filePath, "-o", preProcessedFile, "-I"+os.path.dirname(__file__)+"/XMLConf", "-DXMLPREPROCESSOR"]
+    cmd = ["gcc", "-x", "c++", "-E", filePath, "-o", preProcessedFile, "-I"+os.path.dirname(__file__)+"/XMLConf", "-DXMLPREPROCESSOR", defines]
     print "C preprocessor command: " + " ".join(cmd)
-    call(cmd)
+    os.system(" ".join(cmd))    
     
     return (preProcessedFile, dirName, baseName)
 
@@ -47,10 +48,11 @@ def prepareProxy(args):
     '''
     filePath = args.file
     topStruct = args.struct
+    defines = args.define
     
     # Use the C preprocessor to preprocess the file
     # This allows to get rid of comments and replace known defines
-    (preProcessedFile, dirName, baseName) = preProcessFile(filePath) 
+    (preProcessedFile, dirName, baseName) = preProcessFile(filePath, defines) 
     
     # Parse the file
     # Get in return a dictionary of all the structures found (correctly understood)
@@ -110,6 +112,7 @@ def parseArgs():
     parser.add_argument('file', type=str, help="Header file containing the structure")
     parser.add_argument('-s', '--struct', type=str, help="Top structure")
     parser.add_argument('-t', '--test', action='store_true', help="Test the parsing of the structure")
+    parser.add_argument('-d', '--define', type=str, help="Pass additional user preprocessor defines")
     
     # Process arguments
     args = parser.parse_args()
