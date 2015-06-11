@@ -81,7 +81,7 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
-		int val = strtol(s.data(), &endptr, 0);
+		unsigned int val = strtoul(s.data(), &endptr, 0);
 		if(!*endptr){
 			ref = val;
 			fReadSuccess++;
