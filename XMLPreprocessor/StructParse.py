@@ -22,8 +22,10 @@ int xml_read_file_%(struct)s(const char* fileName){
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
+        gParser.getLastError()->clear();
         return -1;
     }
+    gParser.getLastError()->clear();
     return 0;
 }
 
@@ -36,8 +38,11 @@ int xml_apply_%(struct)s(%(structtype)s%(struct)s *ptr){
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
+        gParser.getLastError()->clear();
         return -1;
     }
+    gParser.getLastError()->clear();
+
     return gParser.getReadSuccess();
 }
 
@@ -51,8 +56,11 @@ int xml_test_%(struct)s(){
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
+        gParser.getLastError()->clear();
         return -1;
     }
+    gParser.getLastError()->clear();
+
     std::cout << "XML tags without struct correspondance: " << std::endl;
     gParser.printAdditional();
     return gParser.getReadSuccess();
@@ -91,8 +99,10 @@ int xml_create_%(struct)s(%(structtype)s%(struct)s *ptr, const char* fileName){
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
         gLastFatalError = ex.what();
+        writer.getLastError()->clear();
         return -1;
     }
+    writer.getLastError()->clear();
     return 0;
 }
 """

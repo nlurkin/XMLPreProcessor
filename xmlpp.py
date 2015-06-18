@@ -12,7 +12,7 @@ import os
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from __builtin__ import bool
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 __descr__ = ("""
 Script for XML proxy
 """)
