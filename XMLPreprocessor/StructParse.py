@@ -403,7 +403,8 @@ def writeStructStartCompare(mainStruct, sDict, tdefDict, prefixString, prefixPoi
     return tester
 
 def wrapInCatchError(object, bool_statement):
-    return "if(!" + bool_statement + ") " + object + ".getLastError().stringStack();"
+    #return "if(!" + bool_statement + ") " + object + ".getLastError().stringStack();"
+    return bool_statement + ";"
 
 def isBasicType(vtype):
     '''
