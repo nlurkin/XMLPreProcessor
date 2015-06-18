@@ -16,7 +16,6 @@
  * @return true if the file could be read and parsed. Else false.
  */
 bool XMLConfParser::readFile(std::string fileName){
-	fTagsCache.clear();
 	if(fDoc != NULL) closeFile();
 	fDoc = xmlParseFile(fileName.data());
 
@@ -50,7 +49,6 @@ bool XMLConfParser::readFile(std::string fileName){
  * @return true in case of success (path is found and the value can be transformed into int). Else false.
  */
 bool XMLConfParser::getValue(std::string path, int& ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		char* endptr;
@@ -67,7 +65,6 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
 			fErrorStack.addError(ss);
 		}
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -80,7 +77,6 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
  * @return true in case of success (path is found and the value can be transformed into unsigned int). Else false.
  */
 bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		char* endptr;
@@ -97,7 +93,6 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 			fErrorStack.addError(ss);
 		}
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -110,7 +105,6 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
  * @return true in case of success (path is found and the value can be transformed into float). Else false.
  */
 bool XMLConfParser::getValue(std::string path, float& ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		char* endptr;
@@ -127,7 +121,6 @@ bool XMLConfParser::getValue(std::string path, float& ref) {
 			fErrorStack.addError(ss);
 		}
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -140,7 +133,6 @@ bool XMLConfParser::getValue(std::string path, float& ref) {
  * @return true in case of success (path is found and the value can be transformed into double). Else false.
  */
 bool XMLConfParser::getValue(std::string path, double& ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		char* endptr;
@@ -157,7 +149,6 @@ bool XMLConfParser::getValue(std::string path, double& ref) {
 			fErrorStack.addError(ss);
 		}
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -169,7 +160,6 @@ bool XMLConfParser::getValue(std::string path, double& ref) {
  * @return true in case of success (path is found). Else false.
  */
 bool XMLConfParser::getValue(std::string path, std::string& ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		std::string s = getNodeString(n);
@@ -177,7 +167,6 @@ bool XMLConfParser::getValue(std::string path, std::string& ref) {
 		fReadSuccess++;
 		return true;
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -189,7 +178,6 @@ bool XMLConfParser::getValue(std::string path, std::string& ref) {
  * @return true in case of success (path is found). Else false.
  */
 bool XMLConfParser::getValue(std::string path, char *ref) {
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
 	if(n){
 		std::string s = getNodeString(n);
@@ -197,7 +185,6 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
 		fReadSuccess++;
 		return true;
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -207,15 +194,13 @@ bool XMLConfParser::getValue(std::string path, char *ref) {
  * @return true if the path is found in the XML, else false.
  */
 bool XMLConfParser::pathExists(std::string path) {
-	addCheckElement(path);
-	if(checkCache(path)) return false;
 	xmlNodePtr n = findPathNode(path);
+	addCheckElement(path);
 	if(n){
 		addListDiffElement(path);
 		fReadSuccess++;
 		return true;
 	}
-	else addToCache(path);
 	return false;
 }
 
@@ -302,29 +287,4 @@ void XMLConfParser::printAdditional() {
  */
 void XMLConfParser::addListDiffElement(std::string path) {
 	fListDiff.push_back(path);
-}
-
-/**
- *
- * @param path Path to add to the non existing path cache.
- */
-void XMLConfParser::addToCache(std::string path) {
-	isArrayNode(path); //Strip the eventual array indicator
-	fTagsCache.insert(path);
-}
-
-/**
- * @param path Path to check in the non existing path cache.
- * @return true if Path has been cached as non existing
- */
-bool XMLConfParser::checkCache(std::string path) {
-	isArrayNode(path); // Strip eventual array indicator
-	if(fTagsCache.count(path)>0){
-		std::stringstream ss;
-		ss << path << " does not exist";
-		fErrorStack.addError(ss);
-		std::cout << path << " returns directly" << std::endl;
-		return true;
-	}
-	return false;
 }

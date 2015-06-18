@@ -245,3 +245,4 @@ int XMLConfDocument::isArrayNode(xmlNodePtr node) {
 	if(!id.compare("")) return -1;
 	return atoi(id.data());
 }
+

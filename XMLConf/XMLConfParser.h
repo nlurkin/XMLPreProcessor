@@ -64,13 +64,10 @@ public:
 	void printAdditional(); //!< Print the additional tags
 private:
 	void walkTreeCompare(std::string prefix, xmlNodePtr node); //!< Recursively walk through the XML tree.
-	void addToCache(std::string path); //!< Add path to cache (as non existing)
-	bool checkCache(std::string path); //!< Return true if the path is marked non existent in the cache
 
 	int fReadSuccess; //!< Counter for the number of successful reads
 	std::set<std::string> fListAdditional; //!< List containing the additional tags
 	std::vector<std::string> fListDiff; //!< List containing the modified elements
 	std::vector<std::string>::iterator fListDiffIterator; //!< Iterator through the list containing the modified elements
-	std::set<std::string> fTagsCache; //!< Cache for non existing tags
 };
 #endif /* XMLCONFPARSER_H_ */
