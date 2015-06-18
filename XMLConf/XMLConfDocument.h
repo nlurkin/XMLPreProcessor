@@ -94,7 +94,7 @@ public:
 	 * @return Error stack
 	 */
 	//! Return the error stack.
-	XMLErrorStack getLastError() { return fErrorStack; };
+	XMLErrorStack *getLastError() { return &fErrorStack; };
 
 	/**
 	 *
