@@ -11,6 +11,42 @@
 #include <cstring>
 
 /**
+ * In-place left trim a string. Strip all the characters specified.
+ * @param s String to trim
+ * @param charList List of character to trim
+ * @return Reference to the (modified) input string
+ */
+static inline std::string &ltrim(std::string &s, const char * charList) {
+	std::cout << "ltrim \"" << s << "\"" << std::endl;
+	s.erase(0, s.find_first_not_of(charList));
+	std::cout << "ltrim \"" << s << "\"" << std::endl;
+	return s;
+}
+
+/**
+ * In-place right trim a string. Strip all the characters specified.
+ * @param s String to trim
+ * @param charList List of character to trim
+ * @return Reference to the (modified) input string
+ */
+static inline std::string &rtrim(std::string &s, const char * charList) {
+	std::cout << "rtrim \"" << s << "\"" << std::endl;
+	s.erase(s.find_last_not_of(charList)+1, s.size());
+	std::cout << "rtrim \"" << s << "\"" << std::endl;
+	return s;
+}
+
+/**
+ * In-place left and right trim a string. Strip all the characters specified.
+ * @param s String to trim
+ * @param charList List of character to trim
+ * @return Reference to the (modified) input string
+ */
+static inline std::string &trim(std::string &s, const char* charList) {
+        return ltrim(rtrim(s, charList), charList);
+}
+
+/**
  *
  * @param fileName Full path to the XML file to be read
  * @return true if the file could be read and parsed. Else false.
@@ -53,6 +89,7 @@ bool XMLConfParser::getValue(std::string path, int& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
+		trim(s, "\n\t\r ");
 		int val = strtol(s.data(), &endptr, 0);
 		if(!*endptr){
 			ref = val;
@@ -81,6 +118,7 @@ bool XMLConfParser::getValue(std::string path, unsigned int& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
+		trim(s, "\n\t\r ");
 		unsigned int val = strtoul(s.data(), &endptr, 0);
 		if(!*endptr){
 			ref = val;
@@ -109,6 +147,7 @@ bool XMLConfParser::getValue(std::string path, float& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
+		trim(s, "\n\t\r ");
 		double val = strtof(s.data(), &endptr);
 		if(!*endptr){
 			ref = val;
@@ -137,7 +176,11 @@ bool XMLConfParser::getValue(std::string path, double& ref) {
 	if(n){
 		char* endptr;
 		std::string s = getNodeString(n);
+		std::cout << s << std::endl;
+		trim(s, "\n\t\r ");
+		std::cout << s << std::endl;
 		double val = strtod(s.data(), &endptr);
+		std::cout << val << std::endl;
 		if(!*endptr){
 			ref = val;
 			fReadSuccess++;
