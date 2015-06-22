@@ -51,7 +51,7 @@ int xml_test_%(struct)s(){
     gParser.resetReadSuccess();
     gParser.startCheckAdditional();
     try {
-%(testers)s
+/*%(testers)s*/
     }
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
