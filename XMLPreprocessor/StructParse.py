@@ -51,7 +51,7 @@ int xml_test_%(struct)s(){
     gParser.resetReadSuccess();
     gParser.startCheckAdditional();
     try {
-/*%(testers)s*/
+%(testers)s
     }
     catch (std::runtime_error& ex) {
         std::cout << "Fatal error: " << ex.what() << std::endl;
@@ -310,14 +310,12 @@ def writeStructTest(mainStruct, sDict, tdefDict, prefixString, prefixPointer, in
         
         if isBasicType(vType):                                          # If basic type, we reached a final node
             if arrSize==0:                                              # call the get function
-                tester += '\tif(!gParser.pathExists("' + stringPath + \
-                '")) std::cout << "'+ stringPath + \
-                ' was not found in XML file" << std::endl;\n'
+                tester += '\tgParser.pathExists("' + stringPath + \
+                '");\n'
             else:
                 for i in range(0,arrSize):                              # call the get function for each element in the array
-                    tester += '\tif(!gParser.pathExists("' + stringPath + \
-                    '[' + str(i) + ']")) std::cout << "'+ stringPath + \
-                    '[' + str(i) + '] was not found in XML file" << std::endl;\n'
+                    tester += '\t!gParser.pathExists("' + stringPath + \
+                    '[' + str(i) + ']");\n'
         else:                                                           # Unkown or non-basic type (struct)
             if "struct" in vType:                                       # we don't care about the struct keyword
                 vType = vType.replace("struct", "").strip()
